@@ -1,6 +1,6 @@
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
-from new_wireframe_window import NewWireframeWindow
+from gui.new_wireframe_window import NewWireframeWindow
 
 class MainWindow(object):
     def setupUi(self, MainWindow:Any) -> None:
@@ -80,6 +80,30 @@ class MainWindow(object):
         self.log_browser = QtWidgets.QTextBrowser(self.centralwidget)
         self.log_browser.setGeometry(QtCore.QRect(250, 430, 541, 141))
         self.log_browser.setObjectName("log_browser")
+        self.line_3 = QtWidgets.QFrame(self.centralwidget)
+        self.line_3.setGeometry(QtCore.QRect(10, 400, 211, 16))
+        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setObjectName("line_3")
+        self.label_rotation = QtWidgets.QLabel(self.centralwidget)
+        self.label_rotation.setGeometry(QtCore.QRect(10, 410, 71, 21))
+        self.label_rotation.setObjectName("label_rotation")
+        self.rotation_x_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.rotation_x_btn.setGeometry(QtCore.QRect(30, 480, 41, 31))
+        self.rotation_x_btn.setObjectName("rotation_x_btn")
+        self.rotation_y_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.rotation_y_btn.setGeometry(QtCore.QRect(80, 480, 41, 31))
+        self.rotation_y_btn.setObjectName("rotation_y_btn")
+        self.rotation_z_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.rotation_z_btn.setGeometry(QtCore.QRect(130, 480, 41, 31))
+        self.rotation_z_btn.setObjectName("rotation_z_btn")
+        self.label_rotation_val = QtWidgets.QLabel(self.centralwidget)
+        self.label_rotation_val.setGeometry(QtCore.QRect(20, 450, 101, 21))
+        self.label_rotation_val.setObjectName("label_rotation_val")
+        self.rodation_val_textEdit = QtWidgets.QTextEdit(self.centralwidget)
+        self.rodation_val_textEdit.setGeometry(QtCore.QRect(120, 440, 91, 31))
+        self.rodation_val_textEdit.setObjectName("rodation_val_textEdit")
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -110,6 +134,12 @@ class MainWindow(object):
         self.nav_zoom_in_btn_2.setText(_translate("MainWindow", "➕"))
         self.nav_zoom_out_btn.setText(_translate("MainWindow", "➖"))
         self.label_3.setText(_translate("MainWindow", "Viewport"))
+        self.label_rotation.setText(_translate("MainWindow", "Rotation"))
+        self.rotation_x_btn.setText(_translate("MainWindow", "X"))
+        self.rotation_y_btn.setText(_translate("MainWindow", "Y"))
+        self.rotation_z_btn.setText(_translate("MainWindow", "Z"))
+        self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
+
 
 
     def new_wireframe_window(self) -> None:

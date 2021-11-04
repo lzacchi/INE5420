@@ -2,10 +2,12 @@ from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
+
 class NewWireframeWindow(QtWidgets.QDialog):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
         self.setupUi(self)
+
 
     def setupUi(self, NewWireframeWindow:Any) -> None:
         NewWireframeWindow.setObjectName("new_wireframe_window")
@@ -48,21 +50,47 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_z_text = QtWidgets.QTextEdit(NewWireframeWindow)
         self.new_form_z_text.setGeometry(QtCore.QRect(50, 150, 51, 31))
         self.new_form_z_text.setObjectName("new_form_z_text")
+        self.new_form_delete_btn = QtWidgets.QPushButton(NewWireframeWindow)
+        self.new_form_delete_btn.setGeometry(QtCore.QRect(160, 260, 61, 26))
+        self.new_form_delete_btn.setObjectName("new_form_delete_btn")
+
 
         self.retranslateUi(NewWireframeWindow)
         QtCore.QMetaObject.connectSlotsByName(NewWireframeWindow)
 
+        self.button_actions()
+
+
     def retranslateUi(self, NewWireframeWindow: Any) -> None:
         _translate = QtCore.QCoreApplication.translate
         NewWireframeWindow.setWindowTitle(_translate("NewWireframeWindow", "New Wireframe Structure"))
-        self.new_form_label.setText(_translate("Form", "New Point:"))
-        self.new_form_x_label.setText(_translate("Form", "X:"))
-        self.new_form_y_label.setText(_translate("Form", "Y:"))
-        self.new_form_add_btn.setText(_translate("Form", "Add Point"))
-        self.new_form_points_list_label.setText(_translate("Form", "Your points:"))
-        self.new_form_draw_btn.setText(_translate("Form", "Draw"))
-        self.new_form_z_label.setText(_translate("Form", "Z:"))
+        self.new_form_label.setText(_translate("NewWireframeWindow", "New Point:"))
+        self.new_form_x_label.setText(_translate("NewWireframeWindow", "X:"))
+        self.new_form_y_label.setText(_translate("NewWireframeWindow", "Y:"))
+        self.new_form_add_btn.setText(_translate("NewWireframeWindow", "Add Point"))
+        self.new_form_points_list_label.setText(_translate("NewWireframeWindow", "Your points:"))
+        self.new_form_draw_btn.setText(_translate("NewWireframeWindow", "Draw"))
+        self.new_form_z_label.setText(_translate("NewWireframeWindow", "Z:"))
+        self.new_form_delete_btn.setText(_translate("NewWireframeWindow", "Delete"))
 
 
     def open_new(self) -> None:
         self.show()
+
+
+    def add_point(self) -> None:
+        print("Add point")
+
+
+    def delete_point(self) -> None:
+        print("Delete Point")
+
+
+    def draw_structure(self) -> None:
+        print("Draw Structure")
+
+
+    def button_actions(self) -> None:
+        self.new_form_add_btn.clicked.connect(self.add_point)
+        self.new_form_delete_btn.clicked.connect(self.delete_point)
+        self.new_form_draw_btn.clicked.connect(self.draw_structure)

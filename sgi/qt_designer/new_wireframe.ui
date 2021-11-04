@@ -157,6 +157,19 @@
     </rect>
    </property>
   </widget>
+  <widget class="QPushButton" name="new_form_delete_btn">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>260</y>
+     <width>61</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
