@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>349</width>
-    <height>327</height>
+    <width>333</width>
+    <height>298</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,14 +69,14 @@
     </rect>
    </property>
    <property name="text">
-    <string>Y</string>
+    <string>Y:</string>
    </property>
   </widget>
   <widget class="QPushButton" name="new_form_add_btn">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>140</y>
+     <y>260</y>
      <width>80</width>
      <height>26</height>
     </rect>
@@ -114,7 +114,7 @@
      <x>120</x>
      <y>20</y>
      <width>20</width>
-     <height>261</height>
+     <height>271</height>
     </rect>
    </property>
    <property name="orientation">
@@ -132,6 +132,29 @@
    </property>
    <property name="text">
     <string>Draw</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="new_form_z_label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>160</y>
+     <width>58</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Z:</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="new_form_z_text">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>150</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
    </property>
   </widget>
  </widget>
