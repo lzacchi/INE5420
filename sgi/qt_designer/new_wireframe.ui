@@ -85,16 +85,6 @@
     <string>Add Point</string>
    </property>
   </widget>
-  <widget class="QTextBrowser" name="new_form_points_list_browser">
-   <property name="geometry">
-    <rect>
-     <x>160</x>
-     <y>50</y>
-     <width>161</width>
-     <height>191</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLabel" name="new_form_points_list_label">
    <property name="geometry">
     <rect>
@@ -168,6 +158,16 @@
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="new_form_points_list_widget">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>40</y>
+     <width>171</width>
+     <height>211</height>
+    </rect>
    </property>
   </widget>
  </widget>

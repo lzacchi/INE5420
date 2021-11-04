@@ -1,13 +1,16 @@
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
+from utils.wireframe_structure import WireframeStructure
 
 
 
 class NewWireframeWindow(QtWidgets.QDialog):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
-        self.setupUi(self)
+        self.point_idx = 0
         self.partnerDialog = parent  # Exchange information with Main Window
+        self.points: list[tuple] = []
+        self.setupUi(self)
 
 
     def setupUi(self, NewWireframeWindow:Any) -> None:
@@ -31,9 +34,9 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_add_btn = QtWidgets.QPushButton(NewWireframeWindow)
         self.new_form_add_btn.setGeometry(QtCore.QRect(30, 260, 80, 26))
         self.new_form_add_btn.setObjectName("new_form_add_btn")
-        self.new_form_points_list_browser = QtWidgets.QTextBrowser(NewWireframeWindow)
-        self.new_form_points_list_browser.setGeometry(QtCore.QRect(160, 50, 161, 191))
-        self.new_form_points_list_browser.setObjectName("new_form_points_list_browser")
+        self.new_form_points_list_widget = QtWidgets.QListWidget(NewWireframeWindow)
+        self.new_form_points_list_widget.setGeometry(QtCore.QRect(150, 40, 171, 211))
+        self.new_form_points_list_widget.setObjectName("new_form_points_list_widget")
         self.new_form_points_list_label = QtWidgets.QLabel(NewWireframeWindow)
         self.new_form_points_list_label.setGeometry(QtCore.QRect(160, 20, 81, 18))
         self.new_form_points_list_label.setObjectName("new_form_points_list_label")
@@ -76,15 +79,31 @@ class NewWireframeWindow(QtWidgets.QDialog):
 
 
     def open_new(self) -> None:
+        self.points = []
         self.show()
 
 
     def add_point(self) -> None:
-        self.partnerDialog.console_log("Add Point")
+        x = float(self.new_form_x_text.toPlainText())
+        y = float(self.new_form_y_text.toPlainText())
+
+        self.new_form_x_label.clear()
+        self.new_form_y_label.clear()
+
+        self.points.append((x, y))
+
+
+        point_idx = len(self.points) - 1
+        point_to_str = f"Point {point_idx}: ({x}, {y})"
+
+        self.new_form_points_list_widget.insertItem(point_idx, point_to_str)
+
+        # self.partnerDialog.console_log("Add Point")
 
 
     def delete_point(self) -> None:
-        self.partnerDialog.console_log("Delete Point")
+        self.new_form_points_list_widget.takeItem(self.new_form_points_list_widget.currentRow())
+        self.points.pop()
 
 
     def draw_structure(self) -> None:

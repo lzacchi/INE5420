@@ -150,7 +150,18 @@ class MainWindow(object):
 
     def new_wireframe_window(self) -> None:
         self.partnerDialog.open_new()
-        self.console_log("This is a test message!")
+
+    def delete_wireframe(self) -> None:
+        pass
+
+    def clear_display_file(self) -> None:
+        pass
+
+    def refresh_viewport(self) -> None:
+        pass
+
+    def navigation(self) -> None:
+        pass
 
 
     def button_actions(self) -> None:
