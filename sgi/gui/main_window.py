@@ -7,7 +7,7 @@ class MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
 
-        self.partnerDialog = NewWireframeWindow()
+        self.partnerDialog = NewWireframeWindow(self)
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -85,24 +85,27 @@ class MainWindow(object):
         self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
-        self.label_rotation = QtWidgets.QLabel(self.centralwidget)
-        self.label_rotation.setGeometry(QtCore.QRect(10, 410, 71, 21))
-        self.label_rotation.setObjectName("label_rotation")
-        self.rotation_x_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.rotation_x_btn.setGeometry(QtCore.QRect(30, 480, 41, 31))
-        self.rotation_x_btn.setObjectName("rotation_x_btn")
-        self.rotation_y_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.rotation_y_btn.setGeometry(QtCore.QRect(80, 480, 41, 31))
-        self.rotation_y_btn.setObjectName("rotation_y_btn")
-        self.rotation_z_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.rotation_z_btn.setGeometry(QtCore.QRect(130, 480, 41, 31))
-        self.rotation_z_btn.setObjectName("rotation_z_btn")
-        self.label_rotation_val = QtWidgets.QLabel(self.centralwidget)
-        self.label_rotation_val.setGeometry(QtCore.QRect(20, 450, 101, 21))
-        self.label_rotation_val.setObjectName("label_rotation_val")
-        self.rodation_val_textEdit = QtWidgets.QTextEdit(self.centralwidget)
-        self.rodation_val_textEdit.setGeometry(QtCore.QRect(120, 440, 91, 31))
-        self.rodation_val_textEdit.setObjectName("rodation_val_textEdit")
+        # self.label_rotation = QtWidgets.QLabel(self.centralwidget)
+        # self.label_rotation.setGeometry(QtCore.QRect(10, 410, 71, 21))
+        # self.label_rotation.setObjectName("label_rotation")
+        # self.rotation_x_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.rotation_x_btn.setGeometry(QtCore.QRect(30, 480, 41, 31))
+        # self.rotation_x_btn.setObjectName("rotation_x_btn")
+        # self.rotation_y_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.rotation_y_btn.setGeometry(QtCore.QRect(80, 480, 41, 31))
+        # self.rotation_y_btn.setObjectName("rotation_y_btn")
+        # self.rotation_z_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.rotation_z_btn.setGeometry(QtCore.QRect(130, 480, 41, 31))
+        # self.rotation_z_btn.setObjectName("rotation_z_btn")
+        # self.label_rotation_val = QtWidgets.QLabel(self.centralwidget)
+        # self.label_rotation_val.setGeometry(QtCore.QRect(20, 450, 101, 21))
+        # self.label_rotation_val.setObjectName("label_rotation_val")
+        # self.rodation_val_textEdit = QtWidgets.QTextEdit(self.centralwidget)
+        # self.rodation_val_textEdit.setGeometry(QtCore.QRect(120, 440, 91, 31))
+        # self.rodation_val_textEdit.setObjectName("rodation_val_textEdit")
+        self.clear_log_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.clear_log_btn.setGeometry(QtCore.QRect(750, 550, 41, 21))
+        self.clear_log_btn.setObjectName("clear_log_btn")
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -112,7 +115,6 @@ class MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.button_actions()
-
 
 
     def retranslateUi(self, MainWindow:Any) -> None:
@@ -134,17 +136,23 @@ class MainWindow(object):
         self.nav_zoom_in_btn_2.setText(_translate("MainWindow", "➕"))
         self.nav_zoom_out_btn.setText(_translate("MainWindow", "➖"))
         self.label_3.setText(_translate("MainWindow", "Viewport"))
-        self.label_rotation.setText(_translate("MainWindow", "Rotation"))
-        self.rotation_x_btn.setText(_translate("MainWindow", "X"))
-        self.rotation_y_btn.setText(_translate("MainWindow", "Y"))
-        self.rotation_z_btn.setText(_translate("MainWindow", "Z"))
-        self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
+        # self.label_rotation.setText(_translate("MainWindow", "Rotation"))
+        # self.rotation_x_btn.setText(_translate("MainWindow", "X"))
+        # self.rotation_y_btn.setText(_translate("MainWindow", "Y"))
+        # self.rotation_z_btn.setText(_translate("MainWindow", "Z"))
+        # self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
+        self.clear_log_btn.setText(_translate("MainWindow", "Clear"))
 
+
+    def console_log(self, message: str) -> None:
+        self.log_browser.append(message)
 
 
     def new_wireframe_window(self) -> None:
         self.partnerDialog.open_new()
+        self.console_log("This is a test message!")
 
 
     def button_actions(self) -> None:
         self.new_btn.clicked.connect(self.new_wireframe_window)
+        self.clear_log_btn.clicked.connect(self.log_browser.clear)

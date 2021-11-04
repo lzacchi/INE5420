@@ -7,6 +7,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
         self.setupUi(self)
+        self.partnerDialog = parent  # Exchange information with Main Window
 
 
     def setupUi(self, NewWireframeWindow:Any) -> None:
@@ -44,12 +45,12 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_draw_btn = QtWidgets.QPushButton(NewWireframeWindow)
         self.new_form_draw_btn.setGeometry(QtCore.QRect(240, 260, 80, 26))
         self.new_form_draw_btn.setObjectName("new_form_draw_btn")
-        self.new_form_z_label = QtWidgets.QLabel(NewWireframeWindow)
-        self.new_form_z_label.setGeometry(QtCore.QRect(30, 160, 58, 18))
-        self.new_form_z_label.setObjectName("new_form_z_label")
-        self.new_form_z_text = QtWidgets.QTextEdit(NewWireframeWindow)
-        self.new_form_z_text.setGeometry(QtCore.QRect(50, 150, 51, 31))
-        self.new_form_z_text.setObjectName("new_form_z_text")
+        # self.new_form_z_label = QtWidgets.QLabel(NewWireframeWindow)
+        # self.new_form_z_label.setGeometry(QtCore.QRect(30, 160, 58, 18))
+        # self.new_form_z_label.setObjectName("new_form_z_label")
+        # self.new_form_z_text = QtWidgets.QTextEdit(NewWireframeWindow)
+        # self.new_form_z_text.setGeometry(QtCore.QRect(50, 150, 51, 31))
+        # self.new_form_z_text.setObjectName("new_form_z_text")
         self.new_form_delete_btn = QtWidgets.QPushButton(NewWireframeWindow)
         self.new_form_delete_btn.setGeometry(QtCore.QRect(160, 260, 61, 26))
         self.new_form_delete_btn.setObjectName("new_form_delete_btn")
@@ -70,7 +71,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_add_btn.setText(_translate("NewWireframeWindow", "Add Point"))
         self.new_form_points_list_label.setText(_translate("NewWireframeWindow", "Your points:"))
         self.new_form_draw_btn.setText(_translate("NewWireframeWindow", "Draw"))
-        self.new_form_z_label.setText(_translate("NewWireframeWindow", "Z:"))
+        # self.new_form_z_label.setText(_translate("NewWireframeWindow", "Z:"))
         self.new_form_delete_btn.setText(_translate("NewWireframeWindow", "Delete"))
 
 
@@ -79,15 +80,15 @@ class NewWireframeWindow(QtWidgets.QDialog):
 
 
     def add_point(self) -> None:
-        print("Add point")
+        self.partnerDialog.console_log("Add Point")
 
 
     def delete_point(self) -> None:
-        print("Delete Point")
+        self.partnerDialog.console_log("Delete Point")
 
 
     def draw_structure(self) -> None:
-        print("Draw Structure")
+        self.partnerDialog.console_log("Draw")
 
 
     def button_actions(self) -> None:
