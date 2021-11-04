@@ -5,8 +5,10 @@ description = ""
 authors = ["Lucas Zacchi <zacchilucasm@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.7,<3.11"
 PyQt5 = "^5.15.6"
+mypy = "^0.910"
+numpy = "^1.21.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

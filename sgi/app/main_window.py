@@ -1,6 +1,6 @@
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
-from GUI.new_wireframe_window import NewWireframeWindow
+from new_wireframe_window import NewWireframeWindow
 
 class MainWindow(object):
     def setupUi(self, MainWindow:Any) -> None:
