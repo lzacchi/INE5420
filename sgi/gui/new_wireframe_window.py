@@ -7,8 +7,9 @@ from utils.wireframe_structure import WireframeStructure
 class NewWireframeWindow(QtWidgets.QDialog):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
-        self.point_idx = 0
+        self.wireframe_idx = 0
         self.main_window = parent  # Exchange information with Main Window
+        self.display_file = self.main_window.display_file
         self.points: list[tuple] = []
         self.setupUi(self)
 
@@ -93,8 +94,8 @@ class NewWireframeWindow(QtWidgets.QDialog):
 
         self.points.append((x, y))
 
-        self.new_form_x_label.clear()
-        self.new_form_y_label.clear()
+        self.new_form_x_text.clear()
+        self.new_form_y_text.clear()
 
 
 
@@ -114,12 +115,33 @@ class NewWireframeWindow(QtWidgets.QDialog):
 
 
     def draw_structure(self) -> None:
-        if len(self.points):
-            point_noun = 'points' if len(self.points) > 1 else 'point'
-            article = 'are' if len(self.points) > 1 else 'is'
-            self.console_log(f"There {article} {len(self.points)} {point_noun} in the list")
-        else:
-            self.console_log(f"There are no points to draw")
+        """
+        Creates a 'WireframeStructure' object and, adds it
+        to the Main Window's display file and draws the structure
+
+
+        After it's done, all the fields and structures in this window are reset
+        """
+
+        structure_id = self.wireframe_idx
+        wireframe = WireframeStructure(self.points, structure_id)
+
+
+
+        self.display_file.append(wireframe)
+        self.main_window.display_file_list.insertItem(structure_id, wireframe.name)
+        self.wireframe_idx += 1
+
+        self.console_log(f"Wireframe added: {wireframe.name}")
+
+        # TODO: Draw Wireframe
+
+        self.points = []
+        self.new_form_points_list_widget.clear()
+        # self.new_form_x_text.clear()
+        # self.new_form_y_text.clear()
+
+        self.close()
 
     def button_actions(self) -> None:
         self.new_form_add_btn.clicked.connect(self.add_point)

@@ -4,7 +4,8 @@ import typing
 class WireframeStructure():
     def __init__(self, coordinates: list, struct_index: int) -> None:
         self.coordinates = coordinates
-        self.struct_type = WireframeType(len(self.coordinates))
+        self.struct_type = WireframeType(len(self.coordinates)).name
+        self.name = f"{self.struct_type}_{struct_index}"
         self.struct_name = f"{self.struct_type}_{struct_index}"
 
 
