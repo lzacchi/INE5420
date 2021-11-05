@@ -3,10 +3,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from gui.new_wireframe_window import NewWireframeWindow
 
 class MainWindow(object):
+
     def setupUi(self, MainWindow:Any) -> None:
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
 
+        self.display_file: list = []
         self.partnerDialog = NewWireframeWindow(self)
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)

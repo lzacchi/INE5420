@@ -8,7 +8,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
         self.point_idx = 0
-        self.partnerDialog = parent  # Exchange information with Main Window
+        self.main_window = parent  # Exchange information with Main Window
         self.points: list[tuple] = []
         self.setupUi(self)
 
@@ -78,6 +78,10 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_delete_btn.setText(_translate("NewWireframeWindow", "Delete"))
 
 
+    def console_log(self, message: str) -> None:
+        self.main_window.console_log(message)
+
+
     def open_new(self) -> None:
         self.points = []
         self.show()
@@ -87,28 +91,35 @@ class NewWireframeWindow(QtWidgets.QDialog):
         x = float(self.new_form_x_text.toPlainText())
         y = float(self.new_form_y_text.toPlainText())
 
+        self.points.append((x, y))
+
         self.new_form_x_label.clear()
         self.new_form_y_label.clear()
 
-        self.points.append((x, y))
 
 
-        point_idx = len(self.points) - 1
+        point_idx = len(self.points)
         point_to_str = f"Point {point_idx}: ({x}, {y})"
 
         self.new_form_points_list_widget.insertItem(point_idx, point_to_str)
 
-        # self.partnerDialog.console_log("Add Point")
-
 
     def delete_point(self) -> None:
         self.new_form_points_list_widget.takeItem(self.new_form_points_list_widget.currentRow())
-        self.points.pop()
+
+        try:
+            self.points.pop()
+        except IndexError:
+            self.console_log("Error trying to delete Point: There are no points to delete.")
 
 
     def draw_structure(self) -> None:
-        self.partnerDialog.console_log("Draw")
-
+        if len(self.points):
+            point_noun = 'points' if len(self.points) > 1 else 'point'
+            article = 'are' if len(self.points) > 1 else 'is'
+            self.console_log(f"There {article} {len(self.points)} {point_noun} in the list")
+        else:
+            self.console_log(f"There are no points to draw")
 
     def button_actions(self) -> None:
         self.new_form_add_btn.clicked.connect(self.add_point)
