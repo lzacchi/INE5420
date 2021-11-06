@@ -1,0 +1,3 @@
+O objetivo dos exercícios propostos na Parte I é a construção, passo a passo, de um Sistema Gráfico Interativo capaz de representar, em perspectiva realista, objetos em 3D como modelos de arame e também como superfícies bicúbicas renderizadas como malhas de curvas. Os exercícios são progressivos e construídos sobre os anteriores, o que significa que você necessita ter implementado o exercício anterior para pode implementar o atual, pois vai usar o código que produziu como ponto de partida para o novo exercício.
+
+Neste seu primeiro trabalho, vamos lançar as bases do seu sistema, iniciando pela implementação de conceitos como window, viewport e display file. Para tanto, implemente o sistema

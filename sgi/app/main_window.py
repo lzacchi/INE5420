@@ -1,6 +1,6 @@
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
-from gui.new_wireframe_window import NewWireframeWindow
+from new_wireframe_window import NewWireframeWindow
 
 class MainWindow(object):
 
@@ -154,10 +154,16 @@ class MainWindow(object):
         self.partnerDialog.open_new()
 
     def delete_wireframe(self) -> None:
-        pass
+        self.display_file_list.takeItem(self.display_file_list.currentRow())
+
+        try:
+            self.display_file.pop()
+        except IndexError:
+            self.console_log("Error trying to delete")
 
     def clear_display_file(self) -> None:
-        pass
+        self.display_file_list.clear()
+        self.console_log("Display File cleared!")
 
     def refresh_viewport(self) -> None:
         pass
@@ -168,4 +174,7 @@ class MainWindow(object):
 
     def button_actions(self) -> None:
         self.new_btn.clicked.connect(self.new_wireframe_window)
+        self.clear_btn.clicked.connect(self.clear_display_file)
+        self.delete_btn.clicked.connect(self.delete_wireframe)
+
         self.clear_log_btn.clicked.connect(self.log_browser.clear)

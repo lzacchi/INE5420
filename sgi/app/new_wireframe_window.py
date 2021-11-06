@@ -1,6 +1,6 @@
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
-from utils.wireframe_structure import WireframeStructure
+from wireframe_structure import WireframeStructure
 
 
 
