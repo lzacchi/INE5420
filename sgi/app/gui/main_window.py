@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
 from gui.new_wireframe_window import NewWireframeWindow
@@ -66,21 +67,29 @@ class MainWindow(object):
         self.nav_zoom_out_btn = QtWidgets.QPushButton(self.centralwidget)
         self.nav_zoom_out_btn.setGeometry(QtCore.QRect(50, 310, 31, 26))
         self.nav_zoom_out_btn.setObjectName("nav_zoom_out_btn")
-        self.viewport_frame = QtWidgets.QFrame(self.centralwidget)
-        self.viewport_frame.setGeometry(QtCore.QRect(250, 30, 541, 391))
-        self.viewport_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.viewport_frame.setFrameShadow(QtWidgets.QFrame.Raised)
+
+        self.viewport_frame = QtWidgets.QLabel(self.centralwidget)
+        self.viewport_frame.setGeometry(QtCore.QRect(240, 40, 551, 381))
+        self.viewport_frame.setText("")
         self.viewport_frame.setObjectName("viewport_frame")
+
+        viewport_area = QtGui.QPixmap(551,381)
+        viewport_area.fill(QtGui.QColor("black"))
+
+        self.viewport_frame.setPixmap(viewport_area)
+
+        self.painter = QtGui.QPainter(self.viewport_frame.pixmap())
+
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
         self.line_2.setGeometry(QtCore.QRect(220, 30, 20, 541))
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_2.setObjectName("line_2")
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(250, 10, 71, 21))
+        self.label_3.setGeometry(QtCore.QRect(240, 10, 71, 21))
         self.label_3.setObjectName("label_3")
         self.log_browser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.log_browser.setGeometry(QtCore.QRect(250, 430, 541, 141))
+        self.log_browser.setGeometry(QtCore.QRect(240, 430, 551, 141))
         self.log_browser.setObjectName("log_browser")
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setGeometry(QtCore.QRect(10, 400, 211, 16))
@@ -147,7 +156,7 @@ class MainWindow(object):
 
 
     def console_log(self, message: str) -> None:
-        self.log_browser.append(message)
+        self.log_browser.append(f"[{datetime.now().strftime('%H:%M:%S')}]: " + message)
 
 
     def new_wireframe_window(self) -> None:
@@ -165,9 +174,10 @@ class MainWindow(object):
 
 
 
-    def clear_display_file(self) -> None:
-        self.display_file_list.clear()
-        self.console_log("Display File cleared!")
+    def clear_viewport(self) -> None:
+        self.viewport_frame.pixmap().fill(QtGui.QColor("black"))
+        self.viewport_frame.update()
+        self.console_log("Viewport clear")
 
 
     def draw_wireframe(self, wireframe: Any) -> None:
@@ -200,7 +210,7 @@ class MainWindow(object):
 
     def button_actions(self) -> None:
         self.new_btn.clicked.connect(self.new_wireframe_window)
-        self.clear_btn.clicked.connect(self.clear_display_file)
+        self.clear_btn.clicked.connect(self.clear_viewport)
         self.delete_btn.clicked.connect(self.delete_wireframe)
 
         self.clear_log_btn.clicked.connect(self.log_browser.clear)
