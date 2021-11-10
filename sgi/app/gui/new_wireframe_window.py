@@ -1,3 +1,4 @@
+import os
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
 from utils.wireframe_structure import WireframeStructure
@@ -99,8 +100,6 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_x_text.clear()
         self.new_form_y_text.clear()
 
-
-
         point_idx = len(self.points)
         point_to_str = f"Point {point_idx}: ({x}, {y})"
 
@@ -127,8 +126,6 @@ class NewWireframeWindow(QtWidgets.QDialog):
 
         structure_id = self.wireframe_idx
         wireframe = WireframeStructure(self.points, structure_id)
-
-
 
         self.display_file.append(wireframe)
         self.main_window.display_file_list.insertItem(structure_id, wireframe.name)

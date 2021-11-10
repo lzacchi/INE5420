@@ -9,7 +9,7 @@ class WireframeStructure():
         self.vertices = len(self.coordinates)
         self.struct_type = WireframeType(self.vertices).name
         self.name = f"{self.struct_type}_{struct_index}"
-        self.color = WireframeColor(random.randrange(1, 15)).name
+        self.color = WireframeColor(random.randrange(1, 8)).name
         self.struct_name = f"{self.struct_type}_{struct_index}"
 
 
@@ -30,17 +30,10 @@ class WireframeType(Enum):
 
 class WireframeColor(Enum):
     """Uses PyQt5.QtCore.Qt colors"""
-    black = 1
+    white = 1
     red = 2
-    darkRed = 3
-    green = 4
-    darkGreen = 5
-    blue = 6
-    darkBlue = 7
-    cyan = 8
-    darkCyan = 9
-    magenta = 10
-    darkMagenta = 11
-    yellow = 12
-    darkYellow = 13
-    gray = 14
+    green = 3
+    blue = 4
+    cyan = 5
+    magenta = 6
+    yellow = 7
