@@ -1,3 +1,17 @@
-O objetivo dos exercícios propostos na Parte I é a construção, passo a passo, de um Sistema Gráfico Interativo capaz de representar, em perspectiva realista, objetos em 3D como modelos de arame e também como superfícies bicúbicas renderizadas como malhas de curvas. Os exercícios são progressivos e construídos sobre os anteriores, o que significa que você necessita ter implementado o exercício anterior para pode implementar o atual, pois vai usar o código que produziu como ponto de partida para o novo exercício.
+# INE5426
 
-Neste seu primeiro trabalho, vamos lançar as bases do seu sistema, iniciando pela implementação de conceitos como window, viewport e display file. Para tanto, implemente o sistema
+## INSTRUÇÕES
+Este programa utiliza Poetry como gerenciador de dependências. Para executar o projeto através, dele, siga as intruções de instalação disponíveis em:
+https://python-poetry.org/
+
+Execução:
+- `poetry install` para instalar as dependências do projeto
+- `poetry run python3 app/main.py` para executar o projeto.
+
+## Estrutura do projeto
+
+Os diretórios do projeto estão organizados da seguinte maneira:
+- `qt_designer`: arquivos .ui utilizados durante a criação das janelas através da ferramenta Qt Designer
+- `app`: diretório raiz
+- `app/gui`: arquivos .py da descrição e funcionamento das janelas e interfaces gráficas
+- `app/utils`: funções e estruturas específicas utilizadas no projeto, como a transformada de viewport e a declaração da estrutura wireframe
