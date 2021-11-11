@@ -3,7 +3,8 @@ from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QColor
 from gui.new_wireframe_window import NewWireframeWindow
-from coordinates import Coordinates
+from gui.transformation_widow import TransformationWindow
+from utils.coordinates import Coordinates
 from utils.viewport_transformation import x_viewport, y_viewport
 from utils.wireframe_structure import WireframeStructure
 
@@ -18,7 +19,8 @@ PAN_STEP = 0.1
 class MainWindow(object):
     def __init__(self) -> None:
         self.display_file: list = []
-        self.partnerDialog = NewWireframeWindow(self)
+        self.new_wireframe = NewWireframeWindow(self)
+        self.transformation_window = TransformationWindow(self)
         self.scale_accumulator = 0
         self.window_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, 0)
         self.viewport_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, SCALE_STEP)
@@ -38,7 +40,7 @@ class MainWindow(object):
         self.label.setGeometry(QtCore.QRect(10, 10, 71, 21))
         self.label.setObjectName("label")
         self.display_file_list = QtWidgets.QListWidget(self.centralwidget)
-        self.display_file_list.setGeometry(QtCore.QRect(10, 30, 131, 191))
+        self.display_file_list.setGeometry(QtCore.QRect(10, 30, 131, 241))
         self.display_file_list.setObjectName("display_file_list")
         self.new_btn = QtWidgets.QPushButton(self.centralwidget)
         self.new_btn.setGeometry(QtCore.QRect(150, 30, 71, 31))
@@ -56,6 +58,13 @@ class MainWindow(object):
         self.redraw_btn = QtWidgets.QPushButton(self.centralwidget)
         self.redraw_btn.setGeometry(QtCore.QRect(150, 190, 71, 31))
         self.redraw_btn.setObjectName("redraw_btn")
+
+        # self.save_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.save_btn.setGeometry(QtCore.QRect(10, 230, 61, 31))
+        # self.save_btn.setObjectName("save_btn")
+        # self.load_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.load_btn.setGeometry(QtCore.QRect(80, 230, 61, 31))
+        # self.load_btn.setObjectName("load_btn")
 
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setGeometry(QtCore.QRect(10, 270, 211, 16))
@@ -89,6 +98,10 @@ class MainWindow(object):
         self.viewport_frame.setText("")
         self.viewport_frame.setObjectName("viewport_frame")
 
+        self.transform_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.transform_btn.setGeometry(QtCore.QRect(150, 230, 71, 31))
+        self.transform_btn.setObjectName("transform_btn")
+
         viewport_area = QtGui.QPixmap(551,381)
         viewport_area.fill(QtGui.QColor("black"))
 
@@ -112,6 +125,24 @@ class MainWindow(object):
         self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
+        # self.label_rotation = QtWidgets.QLabel(self.centralwidget)
+        # self.label_rotation.setGeometry(QtCore.QRect(10, 410, 71, 21))
+        # self.label_rotation.setObjectName("label_rotation")
+        # self.rotation_x_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.rotation_x_btn.setGeometry(QtCore.QRect(30, 480, 41, 31))
+        # self.rotation_x_btn.setObjectName("rotation_x_btn")
+        # self.rotation_y_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.rotation_y_btn.setGeometry(QtCore.QRect(80, 480, 41, 31))
+        # self.rotation_y_btn.setObjectName("rotation_y_btn")
+        # self.rotation_z_btn = QtWidgets.QPushButton(self.centralwidget)
+        # self.rotation_z_btn.setGeometry(QtCore.QRect(130, 480, 41, 31))
+        # self.rotation_z_btn.setObjectName("rotation_z_btn")
+        # self.label_rotation_val = QtWidgets.QLabel(self.centralwidget)
+        # self.label_rotation_val.setGeometry(QtCore.QRect(20, 450, 101, 21))
+        # self.label_rotation_val.setObjectName("label_rotation_val")
+        # self.rotation_val_textEdit = QtWidgets.QTextEdit(self.centralwidget)
+        # self.rotation_val_textEdit.setGeometry(QtCore.QRect(120, 440, 91, 31))
+        # self.rotation_val_textEdit.setObjectName("rodation_val_textEdit")
         self.clear_log_btn = QtWidgets.QPushButton(self.centralwidget)
         self.clear_log_btn.setGeometry(QtCore.QRect(750, 550, 41, 21))
         self.clear_log_btn.setObjectName("clear_log_btn")
@@ -123,7 +154,7 @@ class MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        self.button_functions()
+        self.connect_signals()
 
 
     def retranslateUi(self, MainWindow:Any) -> None:
@@ -136,6 +167,9 @@ class MainWindow(object):
         self.reset_btn.setText(_translate("MainWindow", "Reset"))
         self.redraw_btn.setText(_translate("MainWindow", "Redraw"))
 
+        # self.save_btn.setText(_translate("MainWindow", "Save"))
+        # self.load_btn.setText(_translate("MainWindow", "Load"))
+
         self.label_2.setText(_translate("MainWindow", "Navigation"))
         self.nav_up_btn.setText(_translate("MainWindow", "▲"))
         self.nav_right_btn.setText(_translate("MainWindow", "▶"))
@@ -144,21 +178,37 @@ class MainWindow(object):
         self.nav_zoom_in_btn.setText(_translate("MainWindow", "➕"))
         self.nav_zoom_out_btn.setText(_translate("MainWindow", "➖"))
         self.label_3.setText(_translate("MainWindow", "Viewport"))
+        # self.label_rotation.setText(_translate("MainWindow", "Rotation"))
+        # self.rotation_x_btn.setText(_translate("MainWindow", "X"))
+        # self.rotation_y_btn.setText(_translate("MainWindow", "Y"))
+        # self.rotation_z_btn.setText(_translate("MainWindow", "Z"))
+        # self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
         self.clear_log_btn.setText(_translate("MainWindow", "Clear"))
+        self.transform_btn.setText(_translate("MainWindow", "Transform"))
 
     # --- Utils ---
 
     def console_log(self, message: str) -> None:
         self.log_browser.append(f"[{datetime.now().strftime('%H:%M:%S')}]: " + message)
 
+    def select_current_object(self) -> QtWidgets.QListWidgetItem:
+        current_row = self.display_file_list.currentRow()
+        return self.display_file_list.item(current_row)
+
     # --- Viewport/canvas drawing ---
 
-    def new_wireframe_window(self) -> None:
-        self.partnerDialog.open_new()
+    def open_new_wireframe_window(self) -> None:
+        self.new_wireframe.open_new()
+
+    def open_transformation_window(self) -> None:
+        current_object = self.select_current_object()
+        if current_object is None:
+            self.console_log("Can't transform without selecting a wireframe!")
+            return
+        self.transformation_window.open_new(current_object)
 
 
     def delete_wireframe(self) -> None:
-
         try:
             self.display_file.pop()
         except IndexError:
@@ -166,7 +216,6 @@ class MainWindow(object):
 
         self.console_log(f"Deleting structure: {self.display_file_list.currentRow()}")
         self.display_file_list.takeItem(self.display_file_list.currentRow())
-
 
 
     def clear_viewport(self) -> None:
@@ -258,9 +307,11 @@ class MainWindow(object):
 
     # --- Buttons ---
 
-    def button_functions(self) -> None:
+    def connect_signals(self) -> None:
         # New windows
-        self.new_btn.clicked.connect(self.new_wireframe_window)
+        self.new_btn.clicked.connect(self.open_new_wireframe_window)
+        self.transform_btn.clicked.connect(self.open_transformation_window)
+
 
         # Display File/ Viewport Buttons
         self.redraw_btn.clicked.connect(self.refresh_viewport)
