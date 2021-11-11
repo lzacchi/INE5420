@@ -1,4 +1,4 @@
-# INE5426
+# INE5420
 
 ## INSTRUÇÕES
 Este programa utiliza Poetry como gerenciador de dependências. Para executar o projeto através, dele, siga as intruções de instalação disponíveis em:
