@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Matrix():
-    def __init__(self, angle: float, Dx: float, Dy: float, Sx: float, Sy: float) -> None:
+    def __init__(self, angle:float = 0, Dx:float = 0, Dy: float = 0, Sx: float = 0, Sy: float = 0) -> None:
         self.angle = angle
         self.Dx = Dx
         self.Dy = Dy

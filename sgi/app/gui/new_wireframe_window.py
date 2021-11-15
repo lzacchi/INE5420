@@ -128,10 +128,10 @@ class NewWireframeWindow(QtWidgets.QDialog):
         wireframe = WireframeStructure(self.points, structure_id)
 
         self.display_file.append(wireframe)
-        self.main_window.display_file_list.insertItem(structure_id, wireframe.name)
+        self.main_window.display_file_list.insertItem(structure_id, wireframe.struct_name)
         self.wireframe_idx += 1
 
-        self.console_log(f"Wireframe added: {wireframe.name}")
+        self.console_log(f"Wireframe added: {wireframe.struct_name}")
 
         self.main_window.draw_wireframe(wireframe)
 

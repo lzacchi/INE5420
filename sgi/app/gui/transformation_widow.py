@@ -4,22 +4,28 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Any
 
+from utils.math_utils import Matrix
+
 
 class TransformationWindow(QtWidgets.QMainWindow):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
-        main_window = parent
+        self.main_window = parent
         self.transformations: list[int] = []
+        self.center_point = False
+
         self.setupUi(self)
 
         self.radio_btns = QtWidgets.QButtonGroup()
         self.radio_btns.addButton(self.center_radio_btn)
         self.radio_btns.addButton(self.origin_radio_btn)
         self.radio_btns.addButton(self.point_radio_btn)
-        self.rotation_x_iput.setDisabled(True)
+        self.rotation_x_input.setDisabled(True)
         self.rotation_y_input.setDisabled(True)
 
         self.connect_signals()
+
+        self.button_actions()
 
     def setupUi(self, TransformationWindow:Any) -> None:
         # Generated code:
@@ -50,9 +56,9 @@ class TransformationWindow(QtWidgets.QMainWindow):
         self.rotate_btn = QtWidgets.QPushButton(self.centralwidget)
         self.rotate_btn.setGeometry(QtCore.QRect(360, 130, 71, 31))
         self.rotate_btn.setObjectName("rotate_btn")
-        self.rotation_x_iput = QtWidgets.QTextEdit(self.centralwidget)
-        self.rotation_x_iput.setGeometry(QtCore.QRect(260, 80, 61, 31))
-        self.rotation_x_iput.setObjectName("rotation_x_iput")
+        self.rotation_x_input = QtWidgets.QTextEdit(self.centralwidget)
+        self.rotation_x_input.setGeometry(QtCore.QRect(260, 80, 61, 31))
+        self.rotation_x_input.setObjectName("rotation_x_input")
         self.rotation_y_input = QtWidgets.QTextEdit(self.centralwidget)
         self.rotation_y_input.setGeometry(QtCore.QRect(260, 120, 61, 31))
         self.rotation_y_input.setObjectName("rotation_y_input")
@@ -120,9 +126,9 @@ class TransformationWindow(QtWidgets.QMainWindow):
         self.rotation_theta_label = QtWidgets.QLabel(self.centralwidget)
         self.rotation_theta_label.setGeometry(QtCore.QRect(240, 50, 16, 18))
         self.rotation_theta_label.setObjectName("rotation_theta_label")
-        self.rotation_theta_iput = QtWidgets.QTextEdit(self.centralwidget)
-        self.rotation_theta_iput.setGeometry(QtCore.QRect(260, 40, 61, 31))
-        self.rotation_theta_iput.setObjectName("rotation_theta_iput")
+        self.rotation_theta_input = QtWidgets.QTextEdit(self.centralwidget)
+        self.rotation_theta_input.setGeometry(QtCore.QRect(260, 40, 61, 31))
+        self.rotation_theta_input.setObjectName("rotation_theta_input")
         TransformationWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(TransformationWindow)
         self.statusbar.setObjectName("statusbar")
@@ -154,17 +160,57 @@ class TransformationWindow(QtWidgets.QMainWindow):
         self.point_radio_btn.setText(_translate("TransformationWindow", "Specific Point"))
         self.rotation_theta_label.setText(_translate("TransformationWindow", "θ: "))
 
-    def open_new(self, obj) -> None:
+
+    def open_new(self, obj:Any) -> None:
         self.selected_object = obj
         self.show()
+
+
+    def console_log(self, message: str) -> None:
+        self.main_window.console_log(message)
+
 
     def connect_signals(self) -> None:
         self.radio_btns.buttonClicked.connect(self.toggled_rotation_type)
 
+
     def toggled_rotation_type(self, button: QtWidgets.QAbstractButton) -> None:
         if self.point_radio_btn.isChecked():
-            self.rotation_x_iput.setDisabled(False)
+            self.rotation_x_input.setDisabled(False)
             self.rotation_y_input.setDisabled(False)
+            self.center_point = True
         elif self.center_radio_btn.isChecked() or self.origin_radio_btn.isChecked():
-            self.rotation_x_iput.setDisabled(True)
+            self.rotation_x_input.setDisabled(True)
             self.rotation_y_input.setDisabled(True)
+
+
+    def add_transformation(self, _rotate:bool = False, _translate:bool = False, _scale:bool = False) -> None:
+        self.console_log(f"Selected Object = {self.selected_object}")
+        if _rotate:
+            theta_angle = self.rotation_theta_input.toPlainText()
+            x_value = self.selected_object.coordinates[0]
+            y_value = self.selected_object.coordinates[1]
+            if self.center_point:
+                x_value = self.rotation_x_input.toPlainText()
+                y_value = self.rotation_y_input.toPlainText()
+
+            rotation_matrix = Matrix(angle=float(0 if theta_angle == '' else theta_angle))
+            rotation_matrix.rotation()
+            self.console_log(f"Rotation Matrix = {rotation_matrix}")
+            self.console_log(f"x: {x_value}")
+            self.console_log(f"y: {y_value}")
+
+
+        if _translate:
+            x_value = self.translation_x_input.toPlainText()
+            y_value = self.translation_y_input.toPlainText()
+            translation_matrix = Matrix(Dx=float(x_value), Dy=float(y_value))
+            translation_matrix.translation()
+        if _scale:
+            x_value = self.scaling_x_input.toPlainText()
+            y_value = self.scaling_y_input.toPlainText()
+            scaling_matrix = Matrix(Sx=float(x_value), Sy=float(y_value))
+            scaling_matrix.scaling()
+
+    def button_actions(self) -> None:
+        self.rotate_btn.clicked.connect(lambda: self.add_transformation(_rotate=True))

@@ -191,9 +191,9 @@ class MainWindow(object):
     def console_log(self, message: str) -> None:
         self.log_browser.append(f"[{datetime.now().strftime('%H:%M:%S')}]: " + message)
 
-    def select_current_object(self) -> QtWidgets.QListWidgetItem:
+    def select_current_object(self) -> WireframeStructure:
         current_row = self.display_file_list.currentRow()
-        return self.display_file_list.item(current_row)
+        return self.display_file[current_row]
 
     # --- Viewport/canvas drawing ---
 
@@ -225,7 +225,7 @@ class MainWindow(object):
 
     def draw_wireframe(self, wireframe: Any, refresh:bool = False) -> None:
         if not refresh:
-            self.console_log(f"Drawing {wireframe.name}: {[point for point in wireframe.coordinates]}")
+            self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
         for point in range(wireframe.vertices):
             x1, y1 = wireframe.coordinates[point]
