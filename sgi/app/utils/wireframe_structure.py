@@ -1,8 +1,10 @@
 import random
-import typing
 import numpy as np
-
+from typing import List, Tuple, no_type_check
+from functools import reduce
 from enum import Enum
+from utils.math_utils import TransformationMatrix, calculate_object_center, get_transformation_matrix_from_enum, TransformationType
+
 
 class WireframeStructure():
     def __init__(self, coordinates: list, struct_index: int) -> None:
@@ -10,20 +12,73 @@ class WireframeStructure():
         self.vertices = len(self.coordinates)
 
         self.homogeneous_coordinates = self.get_homogeneous_coordinates()
-        self.center = None
-        self.transformation_list:list = []
+        self.center = Tuple[float, float]
+
+        # List[int] represents the parameters of a transformation, ex: rotation point, rotation degree, etc
+        self.transformation_info: List[Tuple[TransformationType, List[int]]] = []
+        # List of matrix transformations
+        self.transformations: List[list] = []
+        self.transformed_coordinates: List = []
+        self.transformed_points: List = []
 
         self.struct_type = WireframeType(self.vertices).name
         self.struct_name = f"{self.struct_type}_{struct_index}"
-        self.color = WireframeColor(random.randrange(1, 8)).name
+        self.color = WireframeColor(random.randrange(1, 7)).name # TODO update to selected color
+
+        self.transform_to_points()
 
 
-    def get_homogeneous_coordinates(self) -> list:
-        return np.hstack((self.coordinates, np.ones((len(self.coordinates), 1))))
+    def get_homogeneous_coordinates(self) -> None:
+        aux_matrix = np.ones((len(self.coordinates), 1))
+        return np.hstack((self.coordinates, aux_matrix))
+
+    def calculate_object_center(self) -> None:
+        self.center = tuple(np.array(self.transformed_coordinates).mean(axis=0))
 
 
-    def change_origin(self) -> tuple:
-        return tuple(np.array(self.coordinates).mean(axis=0))
+    def transform_to_points(self) -> None:
+        self.transformations = []
+        for (transform_type, params) in self.transformation_info:
+            self.transformations.append(get_transformation_matrix_from_enum(transform_type)(*params))
+
+        self.transformed_points = []
+        acc = []
+        for c in self.homogeneous_coordinates:
+            transformed_c = reduce(np.dot, [c, *self.transformations])
+            acc.append((transformed_c[0], transformed_c[1]))
+        self.transformed_coordinates = acc
+
+    def transform(self) -> None:
+        coordinates = self.get_homogeneous_coordinates()
+        for (transform_type, params) in self.transformation_info:
+            accum_translation:list = []
+            if transform_type is TransformationType.ROTATION or transform_type is TransformationType.SCALING:
+                if transform_type is TransformationType.ROTATION:
+                    rotate_around_origin = len(params[1]) > 0
+                    if rotate_around_origin:
+                        t_x, t_y = params[1]
+                    else:
+                        t_x, t_y, _ = calculate_object_center(coordinates)
+                    params = [params[0]]
+                else:
+                    t_x, t_y, _ = calculate_object_center(coordinates)
+                first_tr_matrix = TransformationMatrix.translation(-t_x, -t_y)
+                transform_matrix = get_transformation_matrix_from_enum(transform_type)(*params)
+                second_tr_matrix = TransformationMatrix.translation(t_x, t_y)
+                accum_translation.append([first_tr_matrix, transform_matrix, second_tr_matrix])
+            else:
+                operation_matrix = get_transformation_matrix_from_enum(transform_type)
+                accum_translation.append(operation_matrix(*params))
+
+            transformed_points = []
+            for point in coordinates:
+                transformed_points.append(tuple(reduce(np.dot, [point, *accum_translation])))
+            coordinates = np.array(transformed_points)
+
+        # Recalculate center after translations
+        self.center = calculate_object_center(coordinates)
+        # Update transformed coordinates
+        self.transformed_coordinates = list(map(tuple, coordinates[:, :-1]))
 
 
 class WireframeType(Enum):
@@ -37,7 +92,7 @@ class WireframeType(Enum):
     POLYGON = -1
 
     @classmethod
-    @typing.no_type_check  # Keeps 'mypy' from typechecking this function
+    @no_type_check
     def _missing_(cls, value):
         return WireframeType.POLYGON
 
@@ -46,7 +101,6 @@ class WireframeColor(Enum):
     white = 1
     red = 2
     green = 3
-    blue = 4
-    cyan = 5
-    magenta = 6
-    yellow = 7
+    cyan = 4
+    magenta = 5
+    yellow = 6

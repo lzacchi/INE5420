@@ -1,17 +1,18 @@
 # Popup for the transformation window
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Any
+from enum import Enum
+from utils.math_utils import TransformationMatrix, TransformationType
 
-from utils.math_utils import Matrix
 
 
 class TransformationWindow(QtWidgets.QMainWindow):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
         self.main_window = parent
-        self.transformations: list[int] = []
+        self.transformations: list[tuple] = []
+        self.selected_object: WireframeStructure = None
         self.center_point = False
 
         self.setupUi(self)
@@ -25,10 +26,8 @@ class TransformationWindow(QtWidgets.QMainWindow):
 
         self.connect_signals()
 
-        self.button_actions()
-
     def setupUi(self, TransformationWindow:Any) -> None:
-        # Generated code:
+        # Generated Qt Designer code:
         TransformationWindow.setObjectName("TransformationWindow")
         TransformationWindow.resize(443, 529)
         self.centralwidget = QtWidgets.QWidget(TransformationWindow)
@@ -105,7 +104,7 @@ class TransformationWindow(QtWidgets.QMainWindow):
         self.line_3.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
-        self.transform_list = QtWidgets.QListView(self.centralwidget)
+        self.transform_list = QtWidgets.QListWidget(self.centralwidget)
         self.transform_list.setGeometry(QtCore.QRect(10, 20, 201, 441))
         self.transform_list.setObjectName("transform_list")
         self.transform_clear_btn = QtWidgets.QPushButton(self.centralwidget)
@@ -163,15 +162,16 @@ class TransformationWindow(QtWidgets.QMainWindow):
 
     def open_new(self, obj:Any) -> None:
         self.selected_object = obj
+        self.update_transformations_list()
         self.show()
 
+    def update_transformations_list(self) -> None:
+        self.transform_list.clear()
+        for (transform_type, _) in self.selected_object.transformation_info:
+            self.transform_list.addItem(transform_type.name)
 
     def console_log(self, message: str) -> None:
         self.main_window.console_log(message)
-
-
-    def connect_signals(self) -> None:
-        self.radio_btns.buttonClicked.connect(self.toggled_rotation_type)
 
 
     def toggled_rotation_type(self, button: QtWidgets.QAbstractButton) -> None:
@@ -185,32 +185,54 @@ class TransformationWindow(QtWidgets.QMainWindow):
 
 
     def add_transformation(self, _rotate:bool = False, _translate:bool = False, _scale:bool = False) -> None:
-        self.console_log(f"Selected Object = {self.selected_object}")
         if _rotate:
-            theta_angle = self.rotation_theta_input.toPlainText()
-            x_value = self.selected_object.coordinates[0]
-            y_value = self.selected_object.coordinates[1]
+            self.console_log(f"Added rotation")
+            theta_str = self.rotation_theta_input.toPlainText()
+            theta_angle = float(0 if theta_angle == '' else theta_angle)
+            # x_value = self.selected_object.coordinates[0]
+            # y_value = self.selected_object.coordinates[1]
             if self.center_point:
                 x_value = self.rotation_x_input.toPlainText()
                 y_value = self.rotation_y_input.toPlainText()
 
-            rotation_matrix = Matrix(angle=float(0 if theta_angle == '' else theta_angle))
-            rotation_matrix.rotation()
-            self.console_log(f"Rotation Matrix = {rotation_matrix}")
-            self.console_log(f"x: {x_value}")
-            self.console_log(f"y: {y_value}")
-
+            transformation = (TransformationType.ROTATION, [theta_angle])
+            self.selected_object.transformation_info.append(transformation)
 
         if _translate:
-            x_value = self.translation_x_input.toPlainText()
-            y_value = self.translation_y_input.toPlainText()
-            translation_matrix = Matrix(Dx=float(x_value), Dy=float(y_value))
-            translation_matrix.translation()
-        if _scale:
-            x_value = self.scaling_x_input.toPlainText()
-            y_value = self.scaling_y_input.toPlainText()
-            scaling_matrix = Matrix(Sx=float(x_value), Sy=float(y_value))
-            scaling_matrix.scaling()
+            self.console_log(f"Added translation")
+            x_value = 0 if self.translation_x_input.toPlainText() == '' else float(self.translation_x_input.toPlainText())
+            y_value = 0 if self.translation_y_input.toPlainText() == '' else float(self.translation_y_input.toPlainText())
 
-    def button_actions(self) -> None:
+            transformation = (TransformationType.TRANSLATION, [x_value, y_value])
+            self.selected_object.transformation_info.append( transformation )
+
+        if _scale:
+            self.console_log(f"Added scale transformation")
+            x_value = 0 if self.scaling_x_input.toPlainText() == '' else float(self.scaling_x_input.toPlainText())
+            y_value = 0 if self.scaling_y_input.toPlainText() == '' else float(self.scaling_y_input.toPlainText())
+            params = [float(x_value), float(y_value)]
+            transformation = (TransformationType.SCALING, params)
+            self.selected_object.transformation_info.append( transformation )
+        self.update_transformations_list()
+
+
+    def apply_transformations(self) -> None:
+        self.selected_object.transform()
+        self.main_window.draw_wireframe(self.selected_object)
+
+
+    def clear_transformations(self) -> None:
+        self.transform_list.clear()
+        self.selected_object.transformation_list = []
+
+
+    def connect_signals(self) -> None:
+        # Transformation Actions
         self.rotate_btn.clicked.connect(lambda: self.add_transformation(_rotate=True))
+        self.translate_btn.clicked.connect(lambda: self.add_transformation(_translate=True))
+        self.scale_btn.clicked.connect(lambda: self.add_transformation(_scale=True))
+
+        self.transform_clear_btn.clicked.connect(self.clear_transformations)
+        self.transform_btn.clicked.connect(self.apply_transformations)
+
+        self.radio_btns.buttonClicked.connect(self.toggled_rotation_type)

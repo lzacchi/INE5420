@@ -64,7 +64,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.retranslateUi(NewWireframeWindow)
         QtCore.QMetaObject.connectSlotsByName(NewWireframeWindow)
 
-        self.button_actions()
+        self.connect_signals()
 
 
     def retranslateUi(self, NewWireframeWindow: Any) -> None:
@@ -140,7 +140,11 @@ class NewWireframeWindow(QtWidgets.QDialog):
 
         self.close()
 
-    def button_actions(self) -> None:
+    def connect_signals(self) -> None:
         self.new_form_add_btn.clicked.connect(self.add_point)
         self.new_form_delete_btn.clicked.connect(self.delete_point)
         self.new_form_draw_btn.clicked.connect(self.draw_structure)
+
+    def set_color(self) -> None:
+        # TODO (optional)
+        pass

@@ -21,7 +21,7 @@ class MainWindow(object):
         self.display_file: list = []
         self.new_wireframe = NewWireframeWindow(self)
         self.transformation_window = TransformationWindow(self)
-        self.scale_accumulator = 0
+        self.scale_accumulator = 0.0
         self.window_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, 0)
         self.viewport_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, SCALE_STEP)
         self.pan_step = PAN_STEP
@@ -223,12 +223,13 @@ class MainWindow(object):
         self.viewport_frame.update()
 
 
-    def draw_wireframe(self, wireframe: Any, refresh:bool = False) -> None:
+    def draw_wireframe(self, wireframe: WireframeStructure, refresh:bool = False) -> None:
         if not refresh:
             self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
         for point in range(wireframe.vertices):
-            x1, y1 = wireframe.coordinates[point]
+            # x1, y1 = wireframe.coordinates[point]
+            x1, y1 = wireframe.transformed_coordinates[point]
 
             x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
             y1_vp = y_viewport(y1, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
@@ -311,7 +312,6 @@ class MainWindow(object):
         # New windows
         self.new_btn.clicked.connect(self.open_new_wireframe_window)
         self.transform_btn.clicked.connect(self.open_transformation_window)
-
 
         # Display File/ Viewport Buttons
         self.redraw_btn.clicked.connect(self.refresh_viewport)

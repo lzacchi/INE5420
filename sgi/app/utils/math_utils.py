@@ -1,18 +1,34 @@
 # Math
+
 import numpy as np
+from enum import Enum
+from typing import no_type_check, Any
 
 
-class Matrix():
-    def __init__(self, angle:float = 0, Dx:float = 0, Dy: float = 0, Sx: float = 0, Sy: float = 0) -> None:
-        self.angle = angle
-        self.Dx = Dx
-        self.Dy = Dy
-        self.Sx = Sx
-        self.Sy = Sy
+class TransformationType(Enum):
+    ROTATION = 0
+    TRANSLATION = 1
+    SCALING = 2
 
-    def rotation (self) -> list:
+
+def get_transformation_matrix_from_enum(e: TransformationType) -> Any:
+    if e is TransformationType.ROTATION:
+        return TransformationMatrix.rotation
+    elif e is TransformationType.TRANSLATION:
+        return TransformationMatrix.translation
+    else:
+        return TransformationMatrix.scaling
+
+
+def calculate_object_center(coordinates:tuple) -> tuple:
+    return tuple(np.array(coordinates).mean(axis=0))
+
+class TransformationMatrix():
+    @staticmethod
+    @no_type_check
+    def rotation(angle:float) -> list:
         rotation_matrix = np.identity(3)
-        angle = np.radians(self.angle)
+        angle = np.radians(angle)
 
         rotation_matrix[0][0] = np.cos(angle)
         rotation_matrix[0][1] = -1 * np.sin(angle)
@@ -21,17 +37,20 @@ class Matrix():
 
         return rotation_matrix
 
-
-    def translation(self) -> list:
+    @staticmethod
+    @no_type_check
+    def translation(dx: float, dy: float) -> list:
         translation_matrix = np.identity(3)
-        translation_matrix[2][0] = self.Dx
-        translation_matrix[2][1] = self.Dy
+        translation_matrix[2][0] = dx
+        translation_matrix[2][1] = dy
 
         return translation_matrix
 
-    def scaling(self) -> list:
+    @staticmethod
+    @no_type_check
+    def scaling(sx: float, sy: float) -> list:
         scaling_matrix = np.identity(3)
-        scaling_matrix[0][0] = self.Sx
-        scaling_matrix[1][1] = self.Sy
+        scaling_matrix[0][0] = sx
+        scaling_matrix[1][1] = sy
 
         return scaling_matrix
