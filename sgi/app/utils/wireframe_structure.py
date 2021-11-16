@@ -28,7 +28,7 @@ class WireframeStructure():
         self.transform_to_points()
 
 
-    def get_homogeneous_coordinates(self) -> None:
+    def get_homogeneous_coordinates(self) -> np.ndarray:
         aux_matrix = np.ones((len(self.coordinates), 1))
         return np.hstack((self.coordinates, aux_matrix))
 
@@ -54,7 +54,7 @@ class WireframeStructure():
             accum_translation:list = []
             if transform_type is TransformationType.ROTATION or transform_type is TransformationType.SCALING:
                 if transform_type is TransformationType.ROTATION:
-                    rotate_around_origin = len(params[1]) > 0
+                    rotate_around_origin = len(params) == 2
                     if rotate_around_origin:
                         t_x, t_y = params[1]
                     else:
@@ -77,8 +77,11 @@ class WireframeStructure():
 
         # Recalculate center after translations
         self.center = calculate_object_center(coordinates)
-        # Update transformed coordinates
-        self.transformed_coordinates = list(map(tuple, coordinates[:, :-1]))
+
+        # Remove last coordinate
+        aux = coordinates[:, :-1]
+        self.transformed_coordinates = tuple(map(lambda x : (x[1][0], x[1][1]), aux))
+        return
 
 
 class WireframeType(Enum):

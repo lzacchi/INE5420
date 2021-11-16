@@ -188,7 +188,7 @@ class TransformationWindow(QtWidgets.QMainWindow):
         if _rotate:
             self.console_log(f"Added rotation")
             theta_str = self.rotation_theta_input.toPlainText()
-            theta_angle = float(0 if theta_angle == '' else theta_angle)
+            theta_angle = float(0 if theta_str == '' else theta_str)
             # x_value = self.selected_object.coordinates[0]
             # y_value = self.selected_object.coordinates[1]
             if self.center_point:
@@ -219,6 +219,7 @@ class TransformationWindow(QtWidgets.QMainWindow):
     def apply_transformations(self) -> None:
         self.selected_object.transform()
         self.main_window.draw_wireframe(self.selected_object)
+        self.main_window.refresh_viewport()
 
 
     def clear_transformations(self) -> None:

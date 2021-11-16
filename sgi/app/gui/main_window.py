@@ -231,11 +231,11 @@ class MainWindow(object):
             # x1, y1 = wireframe.coordinates[point]
             x1, y1 = wireframe.transformed_coordinates[point]
 
+            # viewport transformation
             x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
             y1_vp = y_viewport(y1, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
 
-
-            x2, y2 = wireframe.coordinates[(point + 1) % wireframe.vertices]
+            x2, y2 = wireframe.transformed_coordinates[(point + 1) % wireframe.vertices]
 
             x2_vp = x_viewport(x2, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
             y2_vp = y_viewport(y2, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
@@ -243,16 +243,13 @@ class MainWindow(object):
             p1 = (x1_vp, y1_vp)
             p2 = (x2_vp, y2_vp)
 
-
             self.draw_line_segment((p1, p2) , wireframe.color)
 
 
     def draw_line_segment(self, points: tuple, wireframe_color:Any) -> None:
         p1, p2 = points
-        p1x = p1[0]
-        p1y = p1[1]
-        p2x = p2[0]
-        p2y = p2[1]
+        p1x, p1y = p1
+        p2x, p2y = p2
         self.painter.setPen(QColor(wireframe_color))
         self.painter.drawLine(p1x, p1y, p2x, p2y)
         self.viewport_frame.update()
