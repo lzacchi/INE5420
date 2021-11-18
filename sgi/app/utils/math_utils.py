@@ -20,8 +20,11 @@ def get_transformation_matrix_from_enum(e: TransformationType) -> Any:
         return TransformationMatrix.scaling
 
 
-def calculate_object_center(coordinates:tuple) -> tuple:
-    return tuple(np.array(coordinates).mean(axis=0))
+def calculate_object_center(coordinates: np.ndarray) -> tuple:
+    center_coordinates = coordinates.mean(axis=0) # compute the mean of the coord array
+    tuple_coordinates = tuple(center_coordinates)
+    return tuple_coordinates
+
 
 class TransformationMatrix():
     @staticmethod

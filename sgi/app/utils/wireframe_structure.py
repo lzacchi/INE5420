@@ -5,14 +5,17 @@ from functools import reduce
 from enum import Enum
 from utils.math_utils import TransformationMatrix, calculate_object_center, get_transformation_matrix_from_enum, TransformationType
 
+def get_homogeneous_coordinates(coordinates) -> np.ndarray:
+    aux_matrix = np.ones((len(coordinates), 1))
+    return np.hstack((coordinates, aux_matrix))
 
 class WireframeStructure():
     def __init__(self, coordinates: list, struct_index: int) -> None:
         self.coordinates = coordinates
         self.vertices = len(self.coordinates)
 
-        self.homogeneous_coordinates = self.get_homogeneous_coordinates()
-        self.center = Tuple[float, float]
+        self.homogeneous_coordinates = get_homogeneous_coordinates(self.coordinates)
+        self.center: Tuple[float, float] = (0.0, 0.0)
 
         # List[int] represents the parameters of a transformation, ex: rotation point, rotation degree, etc
         self.transformation_info: List[Tuple[TransformationType, List[int]]] = []
@@ -28,14 +31,6 @@ class WireframeStructure():
         self.transform_to_points()
 
 
-    def get_homogeneous_coordinates(self) -> np.ndarray:
-        aux_matrix = np.ones((len(self.coordinates), 1))
-        return np.hstack((self.coordinates, aux_matrix))
-
-    def calculate_object_center(self) -> None:
-        self.center = tuple(np.array(self.transformed_coordinates).mean(axis=0))
-
-
     def transform_to_points(self) -> None:
         self.transformations = []
         for (transform_type, params) in self.transformation_info:
@@ -49,7 +44,7 @@ class WireframeStructure():
         self.transformed_coordinates = acc
 
     def transform(self) -> None:
-        coordinates = self.get_homogeneous_coordinates()
+        coordinates = get_homogeneous_coordinates(self.coordinates)
         for (transform_type, params) in self.transformation_info:
             accum_translation:list = []
             if transform_type is TransformationType.ROTATION or transform_type is TransformationType.SCALING:
@@ -59,7 +54,7 @@ class WireframeStructure():
                         t_x, t_y = params[1]
                     else:
                         t_x, t_y, _ = calculate_object_center(coordinates)
-                    params = [params[0]]
+                    params = [params[0]] # remove extra params
                 else:
                     t_x, t_y, _ = calculate_object_center(coordinates)
                 first_tr_matrix = TransformationMatrix.translation(-t_x, -t_y)
@@ -71,8 +66,10 @@ class WireframeStructure():
                 accum_translation.append(operation_matrix(*params))
 
             transformed_points = []
+            # TODO fix
             for point in coordinates:
-                transformed_points.append(tuple(reduce(np.dot, [point, *accum_translation])))
+                reduced = tuple(reduce(np.dot, [point, *accum_translation]))
+                transformed_points.append(reduced)
             coordinates = np.array(transformed_points)
 
         # Recalculate center after translations

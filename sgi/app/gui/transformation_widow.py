@@ -23,6 +23,7 @@ class TransformationWindow(QtWidgets.QMainWindow):
         self.radio_btns.addButton(self.point_radio_btn)
         self.rotation_x_input.setDisabled(True)
         self.rotation_y_input.setDisabled(True)
+        self.origin_radio_btn.setChecked(True)
 
         self.connect_signals()
 
@@ -167,8 +168,8 @@ class TransformationWindow(QtWidgets.QMainWindow):
 
     def update_transformations_list(self) -> None:
         self.transform_list.clear()
-        for (transform_type, _) in self.selected_object.transformation_info:
-            self.transform_list.addItem(transform_type.name)
+        for (transform_type, params) in self.selected_object.transformation_info:
+            self.transform_list.addItem(f"{transform_type.name}: {params}")
 
     def console_log(self, message: str) -> None:
         self.main_window.console_log(message)
@@ -189,29 +190,39 @@ class TransformationWindow(QtWidgets.QMainWindow):
             self.console_log(f"Added rotation")
             theta_str = self.rotation_theta_input.toPlainText()
             theta_angle = float(0 if theta_str == '' else theta_str)
-            # x_value = self.selected_object.coordinates[0]
-            # y_value = self.selected_object.coordinates[1]
-            if self.center_point:
-                x_value = self.rotation_x_input.toPlainText()
-                y_value = self.rotation_y_input.toPlainText()
 
-            transformation = (TransformationType.ROTATION, [theta_angle])
-            self.selected_object.transformation_info.append(transformation)
+            rotate_around_origin = self.origin_radio_btn.isChecked()
+            if rotate_around_origin:
+                origin = (0, 0)
+                transformation = (TransformationType.ROTATION, [theta_angle, origin])
+                self.selected_object.transformation_info.append(transformation)
+
+            rotate_around_obj_center = self.center_radio_btn.isChecked()
+            if rotate_around_obj_center:
+                # We calculate the obj center point inside the transform function, it is empty for now
+                transformation = (TransformationType.ROTATION, [theta_angle, None])
+                self.selected_object.transformation_info.append(transformation)
+
+            rotate_around_point = self.point_radio_btn.isChecked()
+            if rotate_around_point:
+                px = 0.0 if self.rotation_x_input.toPlainText() == "" else float(self.rotation_x_input.toPlainText())
+                py = 0.0 if self.rotation_y_input.toPlainText() == "" else float(self.rotation_y_input.toPlainText())
+                transformation = (TransformationType.ROTATION, [theta_angle, (px, py)])
+                self.selected_object.transformation_info.append(transformation)
 
         if _translate:
             self.console_log(f"Added translation")
-            x_value = 0 if self.translation_x_input.toPlainText() == '' else float(self.translation_x_input.toPlainText())
-            y_value = 0 if self.translation_y_input.toPlainText() == '' else float(self.translation_y_input.toPlainText())
+            x_value = 0.0 if self.translation_x_input.toPlainText() == '' else float(self.translation_x_input.toPlainText())
+            y_value = 0.0 if self.translation_y_input.toPlainText() == '' else float(self.translation_y_input.toPlainText())
 
             transformation = (TransformationType.TRANSLATION, [x_value, y_value])
             self.selected_object.transformation_info.append( transformation )
 
         if _scale:
             self.console_log(f"Added scale transformation")
-            x_value = 0 if self.scaling_x_input.toPlainText() == '' else float(self.scaling_x_input.toPlainText())
-            y_value = 0 if self.scaling_y_input.toPlainText() == '' else float(self.scaling_y_input.toPlainText())
-            params = [float(x_value), float(y_value)]
-            transformation = (TransformationType.SCALING, params)
+            x_value = 0.0 if self.scaling_x_input.toPlainText() == '' else float(self.scaling_x_input.toPlainText())
+            y_value = 0.0 if self.scaling_y_input.toPlainText() == '' else float(self.scaling_y_input.toPlainText())
+            transformation = (TransformationType.SCALING, [x_value, y_value])
             self.selected_object.transformation_info.append( transformation )
         self.update_transformations_list()
 
