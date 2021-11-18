@@ -49,10 +49,11 @@ class WireframeStructure():
             accum_translation:list = []
             if transform_type is TransformationType.ROTATION or transform_type is TransformationType.SCALING:
                 if transform_type is TransformationType.ROTATION:
-                    rotate_around_origin = len(params) == 2
+                    rotate_around_origin = len(params) == 2 and params[1] is not None
                     if rotate_around_origin:
                         t_x, t_y = params[1]
                     else:
+                        # When the second param is empty we need to calculate the coordinates center
                         t_x, t_y, _ = calculate_object_center(coordinates)
                     params = [params[0]] # remove extra params
                 else:
@@ -60,13 +61,12 @@ class WireframeStructure():
                 first_tr_matrix = TransformationMatrix.translation(-t_x, -t_y)
                 transform_matrix = get_transformation_matrix_from_enum(transform_type)(*params)
                 second_tr_matrix = TransformationMatrix.translation(t_x, t_y)
-                accum_translation.append([first_tr_matrix, transform_matrix, second_tr_matrix])
+                accum_translation += [first_tr_matrix, transform_matrix, second_tr_matrix]
             else:
                 operation_matrix = get_transformation_matrix_from_enum(transform_type)
                 accum_translation.append(operation_matrix(*params))
 
             transformed_points = []
-            # TODO fix
             for point in coordinates:
                 reduced = tuple(reduce(np.dot, [point, *accum_translation]))
                 transformed_points.append(reduced)
@@ -77,8 +77,8 @@ class WireframeStructure():
 
         # Remove last coordinate
         aux = coordinates[:, :-1]
-        self.transformed_coordinates = tuple(map(lambda x : (x[1][0], x[1][1]), aux))
-        return
+        self.transformed_coordinates = list(map(lambda x : tuple(x), aux))
+        return # breakpoint for testing
 
 
 class WireframeType(Enum):

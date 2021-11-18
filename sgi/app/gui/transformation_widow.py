@@ -199,6 +199,7 @@ class TransformationWindow(QtWidgets.QMainWindow):
 
             rotate_around_obj_center = self.center_radio_btn.isChecked()
             if rotate_around_obj_center:
+
                 # We calculate the obj center point inside the transform function, it is empty for now
                 transformation = (TransformationType.ROTATION, [theta_angle, None])
                 self.selected_object.transformation_info.append(transformation)
@@ -207,22 +208,25 @@ class TransformationWindow(QtWidgets.QMainWindow):
             if rotate_around_point:
                 px = 0.0 if self.rotation_x_input.toPlainText() == "" else float(self.rotation_x_input.toPlainText())
                 py = 0.0 if self.rotation_y_input.toPlainText() == "" else float(self.rotation_y_input.toPlainText())
+
                 transformation = (TransformationType.ROTATION, [theta_angle, (px, py)])
                 self.selected_object.transformation_info.append(transformation)
+            self.console_log(f"Added transformation: {transformation[0].name} with params: {transformation[1]}")
 
         if _translate:
-            self.console_log(f"Added translation")
             x_value = 0.0 if self.translation_x_input.toPlainText() == '' else float(self.translation_x_input.toPlainText())
             y_value = 0.0 if self.translation_y_input.toPlainText() == '' else float(self.translation_y_input.toPlainText())
 
             transformation = (TransformationType.TRANSLATION, [x_value, y_value])
+            self.console_log(f"Added transformation: {transformation[0].name} with params: {transformation[1]}")
             self.selected_object.transformation_info.append( transformation )
 
         if _scale:
-            self.console_log(f"Added scale transformation")
             x_value = 0.0 if self.scaling_x_input.toPlainText() == '' else float(self.scaling_x_input.toPlainText())
             y_value = 0.0 if self.scaling_y_input.toPlainText() == '' else float(self.scaling_y_input.toPlainText())
+
             transformation = (TransformationType.SCALING, [x_value, y_value])
+            self.console_log(f"Added transformation: {transformation[0].name} with params: {transformation[1]}")
             self.selected_object.transformation_info.append( transformation )
         self.update_transformations_list()
 
