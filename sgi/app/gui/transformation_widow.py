@@ -163,6 +163,7 @@ class TransformationWindow(QtWidgets.QMainWindow):
 
     def open_new(self, obj:Any) -> None:
         self.selected_object = obj
+        self.transformations = []
         self.update_transformations_list()
         self.show()
 
