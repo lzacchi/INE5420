@@ -15,14 +15,16 @@ X_MAX = 551
 Y_MAX = 381
 SCALE_STEP = 0.1
 PAN_STEP = 0.1
+ROTATION_STEP = 0.0
 
 class MainWindow(object):
-    def __init__(self) -> None:
+    def __init__(self):
         self.display_file: list = []
         self.new_wireframe = NewWireframeWindow(self)
         self.transformation_window = TransformationWindow(self)
         self.scale_accumulator = 0.0
-        self.window_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, 0)
+        self.rotation_accumulator = 0.0
+        self.window_coordinates = Coordinates(-X_MAX/2, -Y_MAX/2, X_MAX/2, Y_MAX/2, ROTATION_STEP)
         self.viewport_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, SCALE_STEP)
         self.pan_step = PAN_STEP
 
@@ -40,7 +42,7 @@ class MainWindow(object):
         self.label.setGeometry(QtCore.QRect(10, 10, 71, 21))
         self.label.setObjectName("label")
         self.display_file_list = QtWidgets.QListWidget(self.centralwidget)
-        self.display_file_list.setGeometry(QtCore.QRect(10, 30, 131, 241))
+        self.display_file_list.setGeometry(QtCore.QRect(10, 30, 131, 198))
         self.display_file_list.setObjectName("display_file_list")
         self.new_btn = QtWidgets.QPushButton(self.centralwidget)
         self.new_btn.setGeometry(QtCore.QRect(150, 30, 71, 31))
@@ -59,12 +61,12 @@ class MainWindow(object):
         self.redraw_btn.setGeometry(QtCore.QRect(150, 190, 71, 31))
         self.redraw_btn.setObjectName("redraw_btn")
 
-        # self.save_btn = QtWidgets.QPushButton(self.centralwidget)
-        # self.save_btn.setGeometry(QtCore.QRect(10, 230, 61, 31))
-        # self.save_btn.setObjectName("save_btn")
-        # self.load_btn = QtWidgets.QPushButton(self.centralwidget)
-        # self.load_btn.setGeometry(QtCore.QRect(80, 230, 61, 31))
-        # self.load_btn.setObjectName("load_btn")
+        self.save_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.save_btn.setGeometry(QtCore.QRect(10, 230, 61, 31))
+        self.save_btn.setObjectName("save_btn")
+        self.load_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.load_btn.setGeometry(QtCore.QRect(80, 230, 61, 31))
+        self.load_btn.setObjectName("load_btn")
 
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setGeometry(QtCore.QRect(10, 270, 211, 16))
@@ -94,7 +96,7 @@ class MainWindow(object):
         self.nav_zoom_out_btn.setObjectName("nav_zoom_out_btn")
 
         self.viewport_frame = QtWidgets.QLabel(self.centralwidget)
-        self.viewport_frame.setGeometry(QtCore.QRect(240, 40, 551, 381))
+        self.viewport_frame.setGeometry(QtCore.QRect(240, 40, 550, 380))
         self.viewport_frame.setText("")
         self.viewport_frame.setObjectName("viewport_frame")
 
@@ -125,11 +127,12 @@ class MainWindow(object):
         self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
-        # self.label_rotation = QtWidgets.QLabel(self.centralwidget)
-        # self.label_rotation.setGeometry(QtCore.QRect(10, 410, 71, 21))
-        # self.label_rotation.setObjectName("label_rotation")
-        # self.rotation_x_btn = QtWidgets.QPushButton(self.centralwidget)
-        # self.rotation_x_btn.setGeometry(QtCore.QRect(30, 480, 41, 31))
+
+        self.label_rotation = QtWidgets.QLabel(self.centralwidget)
+        self.label_rotation.setGeometry(QtCore.QRect(10, 410, 71, 21))
+        self.label_rotation.setObjectName("label_rotation")
+        self.rotation_x_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.rotation_x_btn.setGeometry(QtCore.QRect(30, 480, 41, 31))
         # self.rotation_x_btn.setObjectName("rotation_x_btn")
         # self.rotation_y_btn = QtWidgets.QPushButton(self.centralwidget)
         # self.rotation_y_btn.setGeometry(QtCore.QRect(80, 480, 41, 31))
@@ -137,12 +140,13 @@ class MainWindow(object):
         # self.rotation_z_btn = QtWidgets.QPushButton(self.centralwidget)
         # self.rotation_z_btn.setGeometry(QtCore.QRect(130, 480, 41, 31))
         # self.rotation_z_btn.setObjectName("rotation_z_btn")
-        # self.label_rotation_val = QtWidgets.QLabel(self.centralwidget)
-        # self.label_rotation_val.setGeometry(QtCore.QRect(20, 450, 101, 21))
-        # self.label_rotation_val.setObjectName("label_rotation_val")
-        # self.rotation_val_textEdit = QtWidgets.QTextEdit(self.centralwidget)
-        # self.rotation_val_textEdit.setGeometry(QtCore.QRect(120, 440, 91, 31))
-        # self.rotation_val_textEdit.setObjectName("rodation_val_textEdit")
+        self.label_rotation_val = QtWidgets.QLabel(self.centralwidget)
+        self.label_rotation_val.setGeometry(QtCore.QRect(20, 450, 101, 21))
+        self.label_rotation_val.setObjectName("label_rotation_val")
+        self.rotation_val_textEdit = QtWidgets.QTextEdit(self.centralwidget)
+        self.rotation_val_textEdit.setGeometry(QtCore.QRect(120, 440, 91, 31))
+        self.rotation_val_textEdit.setObjectName("rodation_val_textEdit")
+
         self.clear_log_btn = QtWidgets.QPushButton(self.centralwidget)
         self.clear_log_btn.setGeometry(QtCore.QRect(750, 550, 41, 21))
         self.clear_log_btn.setObjectName("clear_log_btn")
@@ -167,8 +171,8 @@ class MainWindow(object):
         self.reset_btn.setText(_translate("MainWindow", "Reset"))
         self.redraw_btn.setText(_translate("MainWindow", "Redraw"))
 
-        # self.save_btn.setText(_translate("MainWindow", "Save"))
-        # self.load_btn.setText(_translate("MainWindow", "Load"))
+        self.save_btn.setText(_translate("MainWindow", "Save"))
+        self.load_btn.setText(_translate("MainWindow", "Load"))
 
         self.label_2.setText(_translate("MainWindow", "Navigation"))
         self.nav_up_btn.setText(_translate("MainWindow", "▲"))
@@ -178,11 +182,13 @@ class MainWindow(object):
         self.nav_zoom_in_btn.setText(_translate("MainWindow", "➕"))
         self.nav_zoom_out_btn.setText(_translate("MainWindow", "➖"))
         self.label_3.setText(_translate("MainWindow", "Viewport"))
-        # self.label_rotation.setText(_translate("MainWindow", "Rotation"))
-        # self.rotation_x_btn.setText(_translate("MainWindow", "X"))
+
+        self.label_rotation.setText(_translate("MainWindow", "Rotation"))
+        self.rotation_x_btn.setText(_translate("MainWindow", "X"))
         # self.rotation_y_btn.setText(_translate("MainWindow", "Y"))
         # self.rotation_z_btn.setText(_translate("MainWindow", "Z"))
-        # self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
+        self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
+
         self.clear_log_btn.setText(_translate("MainWindow", "Clear"))
         self.transform_btn.setText(_translate("MainWindow", "Transform"))
 
@@ -199,6 +205,7 @@ class MainWindow(object):
 
     def open_new_wireframe_window(self) -> None:
         self.new_wireframe.open_new()
+
 
     def open_transformation_window(self) -> None:
         current_object = self.select_current_object()
@@ -303,6 +310,11 @@ class MainWindow(object):
         self.refresh_viewport()
 
 
+    def rotation(self) -> None:
+        rotation_amount = self.rotation_val_textEdit.toPlainText()
+        self.rotation_accumulator = 0.0 if rotation_amount == '' else float(rotation_amount)
+        self.console_log('You rotate the window. Nothing happens.')
+
     # --- Buttons ---
 
     def connect_signals(self) -> None:
@@ -326,4 +338,7 @@ class MainWindow(object):
         self.nav_up_btn.clicked.connect(lambda: self.navigation(_up=True))
         self.nav_left_btn.clicked.connect(lambda: self.navigation(_left=True))
         self.nav_down_btn.clicked.connect(lambda: self.navigation(_down=True))
+        self.redraw_btn.clicked.connect(self.refresh_viewport)
         self.nav_right_btn.clicked.connect(lambda: self.navigation(_right=True))
+
+        self.rotation_x_btn.clicked.connect(self.rotation)
