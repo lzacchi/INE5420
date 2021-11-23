@@ -188,7 +188,6 @@ class TransformationWindow(QtWidgets.QMainWindow):
 
     def add_transformation(self, _rotate:bool = False, _translate:bool = False, _scale:bool = False) -> None:
         if _rotate:
-            self.console_log(f"Added rotation")
             theta_str = self.rotation_theta_input.toPlainText()
             theta_angle = float(0 if theta_str == '' else theta_str)
 

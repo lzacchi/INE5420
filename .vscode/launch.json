@@ -5,8 +5,9 @@
             "name": "Python debug",
             "type": "python",
             "request": "launch",
-            "cwd": "${workspaceFolder}/sgi",
-            "program": "${workspaceFolder}/app/main.py"
+            "cwd": "${workspaceFolder}/sgi/",
+            "program": "${workspaceFolder}/sgi/app/main.py",
+            "console": "integratedTerminal"
         },
     ],
 }

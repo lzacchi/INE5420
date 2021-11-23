@@ -2,12 +2,15 @@ from datetime import datetime
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 from gui.new_wireframe_window import NewWireframeWindow
 from gui.transformation_widow import TransformationWindow
 from utils.coordinates import Coordinates
 from utils.viewport_transformation import x_viewport, y_viewport
 from utils.wireframe_structure import WireframeStructure
 from utils.math_utils import normalize_window
+from utils.wavefront_obj import ObjReader
+
 
 # Constants
 X_MIN = 0
@@ -15,23 +18,30 @@ Y_MIN = 0
 X_MAX = 550
 Y_MAX = 380
 SCALE_STEP = 0.1
-PAN_STEP = 0.1
-ROTATION_STEP = 1
+PAN_STEP = 10
+ROTATION_STEP = 0.1
 
-class MainWindow(object):
-    def __init__(self) -> None:
+class MainWindow(QMainWindow):
+    def __init__(self, parent:QMainWindow = None) -> None:
+        super().__init__(parent)
+
         self.display_file: list = []
         self.window_normalization: list = []
         self.window_denormalization: list = []
-        self.new_wireframe = NewWireframeWindow(self)
-        self.transformation_window = TransformationWindow(self)
+        
+        self.total_wireframes = 0
         self.scale_accumulator = 0.0
         self.rotation_accumulator = 0.0
         self.x_shift_accumulator = 0.0
         self.y_shift_accumulator = 0.0
+        self.pan_step = PAN_STEP
+        
+        self.new_wireframe = NewWireframeWindow(self)
+        self.transformation_window = TransformationWindow(self)
+        
         self.window_coordinates = Coordinates(-X_MAX/2, -Y_MAX/2, X_MAX/2, Y_MAX/2, ROTATION_STEP)
         self.viewport_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, SCALE_STEP)
-        self.pan_step = PAN_STEP
+
         self.normalization_matrix()
         self.denormalization_matrix()
         self.setupUi(self)
@@ -39,7 +49,7 @@ class MainWindow(object):
 
     # --- Ui stuff ---
 
-    def setupUi(self, MainWindow:Any) -> None:
+    def setupUi(self, MainWindow:QMainWindow) -> None:
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
 
@@ -254,8 +264,6 @@ class MainWindow(object):
             self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
         for point in range(wireframe.vertices):
-            wireframe.transform()
-            # x1, y1 = wireframe.coordinates[point]
             x1, y1 = wireframe.transformed_coordinates[point]
 
             # viewport transformation
@@ -297,7 +305,7 @@ class MainWindow(object):
 
     def refresh_viewport(self) -> None:
         self.clear_viewport()
-        self.denormalization_matrix()
+        self.normalization_matrix()
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         for w in self.display_file:
@@ -310,7 +318,17 @@ class MainWindow(object):
     # --- Obj handling ---
 
     def load_obj(self) -> None:
-        pass
+        filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0]
+        self.console_log(f"Loading file: {filename}")
+        objreader = ObjReader(filename, self.total_wireframes, self.window_coordinates, self.transformation_window)
+        new_wf = objreader.wireframes
+        for w in new_wf:
+            self.display_file.append(w)
+            self.draw_wireframe(w)
+            self.display_file_list.insertItem(self.total_wireframes, w.name)
+            self.total_wireframes+=1
+            self.console_log(f"Loaded wireframe: {w.name}")
+
     
     def save_obj(self) -> None:
         pass
@@ -345,15 +363,17 @@ class MainWindow(object):
             self.scale_canvas(SCALE_STEP)
         self.refresh_viewport()
 
-
     def rotation(self) -> None:
+        self.aux_rotation()
+
+    def aux_rotation(self) -> None:
         rotation_amount = self.rotation_val_textEdit.toPlainText()
         self.rotation_accumulator = 0.0 if rotation_amount == '' else float(rotation_amount)
         
         for w in self.display_file:
             w.window_view_up = self.rotation_accumulator
-        self.refresh_viewport()
         self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
+        self.refresh_viewport()
 
     # --- Buttons ---
 

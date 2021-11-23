@@ -38,7 +38,7 @@ def normalize_window(x_shift:float, y_shift:float, width: float, height: float, 
 
 def normalize_coordinate(point:tuple[float, float], height:float, width:float) -> tuple[float, float]:
     x, y = point
-    normalized_point = (x/width, y/height)
+    normalized_point = (x/height, y/width)
     return normalized_point
 
 class TransformationMatrix():

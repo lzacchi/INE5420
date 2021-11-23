@@ -66,6 +66,7 @@ class WireframeStructure():
     def transform(self) -> None:
         coordinates = get_homogeneous_coordinates(self.coordinates)
         coordinates = np.dot(coordinates, self.window_transformations)
+        
         for (transform_type, params) in self.transformation_info:
             accum_translation:list = []
             if transform_type is TransformationType.ROTATION or transform_type is TransformationType.SCALING:
@@ -84,9 +85,13 @@ class WireframeStructure():
                 second_tr_matrix = TransformationMatrix.translation(t_x, t_y)
                 accum_translation += [first_tr_matrix, transform_matrix, second_tr_matrix]
             else:
+                if transform_type is TransformationType.TRANSLATION:
+                    x, y = normalize_coordinate(params, self.window_height/2, self.window_width/2)
+                    params = [x, y]
                 operation_matrix = get_transformation_matrix_from_enum(transform_type)
                 accum_translation.append(operation_matrix(*params))
 
+            coordinates = np.dot(coordinates, self.window_transformations)
             transformed_points = []
             for point in coordinates:
                 reduced = tuple(reduce(np.dot, [point, *accum_translation]))

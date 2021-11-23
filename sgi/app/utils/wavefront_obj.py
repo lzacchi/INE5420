@@ -1,11 +1,12 @@
 """Wavefront.obj File handler"""
 
+import traceback
+from pathlib import Path
+from enum import Enum, auto
 from PyQt5 import QtCore
 from PyQt5.QtGui import QColor
-from wireframe_structure import WireframeStructure
-from enum import Enum, auto
 from typing import List, Dict, Union
-from pathlib import Path
+from utils.wireframe_structure import WireframeStructure
 
 
 WHITE = QColor(255, 255, 255)
@@ -59,11 +60,11 @@ class ObjReader:
         self.load_obj(filepath)
 
     def __str__(self) -> str:
-        return ""
+        return f"Obj reader has read: {self.vertices}"
 
     def parse_mttlib(self, params:list) -> None:
-        filename = params[0]
-        self.split_and_parse_file(str(Path().absolute()/ "resources" / "obj" / filename), self.material_parser)
+        path = str(Path().absolute()/ "resources" / "obj" / params[0])
+        self.split_and_parse_file(path, self.material_parser)
 
     def parse_usemtl(self, params:list) -> None:
         material_file = params[0]
@@ -73,7 +74,8 @@ class ObjReader:
         self.obj_str = params[0]
 
     def parse_vertice(self, params: list) -> None:
-        x, y = params
+        x, y, _ = params
+        print(f"Parsed vertice {x} {y} {_}")
         self.vertices.append((float(x), float(y)))
 
     def parse_elements(self, params:list) -> None:
@@ -81,9 +83,10 @@ class ObjReader:
         for v in params:
             if v[0] == "-":
                 index = int(v)
+                points.append(self.vertices[index])
             else:
                 index = int(v) -1
-            points.append(self.vertices[index])
+                points.append(self.vertices[index])
         
         no_color = not self.material
         if no_color:
@@ -103,9 +106,9 @@ class ObjReader:
 
     def parse_Kd(self, params: list) -> None:
         color = QColor(
-            int(params[0] * 255),
-            int(params[1] * 255),
-            int(params[2] * 255),
+            int(float(params[0]) * 255),
+            int(float(params[1]) * 255),
+            int(float(params[2]) * 255),
         )
         self.material_table[self.material_str] = color
         self.material_str = ""
@@ -116,14 +119,19 @@ class ObjReader:
 
     def split_and_parse_file(self, filepath: str, parser: Dict) -> None:
         with open(filepath) as f:
-            for line in f.readlines():
-                l = line.strip().split()
+            lines = f.readlines()
+            for line in lines:
+                l = line.split()
                 try:
                     header = l[0] # Header should match the value in our ObjHeader enum
                     params = l[1:]
-                    parser[header](self, params)
+                    parser[header](params)
                 except Exception as e:
-                    print(e)
+                    error_index = lines.index(line)+1
+                    print(f"Error '{e}' parsing line {error_index} with content {line}")
+                    print("===")
+                    traceback.print_exc()
+                    print("===")
                     continue
 
 
