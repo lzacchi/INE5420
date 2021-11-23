@@ -3,6 +3,7 @@
 import numpy as np
 from enum import Enum
 from typing import no_type_check, Any
+from functools import reduce
 
 
 class TransformationType(Enum):
@@ -25,6 +26,15 @@ def calculate_object_center(coordinates: np.ndarray) -> tuple:
     tuple_coordinates = tuple(center_coordinates)
     return tuple_coordinates
 
+
+def normalize_window(x_shift:float, y_shift:float, width: float, height: float, angle:float) -> list:
+    rotation_matrix = TransformationMatrix.rotation(angle)
+    translation_matrix = TransformationMatrix.translation(x_shift, y_shift)
+    scaling_matrix = TransformationMatrix.scaling(2/width, 2/height)
+
+    normalization = reduce(np.dot, [translation_matrix, rotation_matrix, scaling_matrix])
+    
+    return normalization
 
 class TransformationMatrix():
     @staticmethod

@@ -7,6 +7,7 @@ from gui.transformation_widow import TransformationWindow
 from utils.coordinates import Coordinates
 from utils.viewport_transformation import x_viewport, y_viewport
 from utils.wireframe_structure import WireframeStructure
+from utils.math_utils import normalize_window
 
 # Constants
 X_MIN = 0
@@ -15,18 +16,24 @@ X_MAX = 551
 Y_MAX = 381
 SCALE_STEP = 0.1
 PAN_STEP = 0.1
-ROTATION_STEP = 0.0
+ROTATION_STEP = 1
 
 class MainWindow(object):
-    def __init__(self):
+    def __init__(self) -> None:
         self.display_file: list = []
+        self.window_normalization: list = []
+        self.window_denormalization: list = []
         self.new_wireframe = NewWireframeWindow(self)
         self.transformation_window = TransformationWindow(self)
         self.scale_accumulator = 0.0
         self.rotation_accumulator = 0.0
+        self.x_shift_accumulator = 0.0
+        self.y_shift_accumulator = 0.0
         self.window_coordinates = Coordinates(-X_MAX/2, -Y_MAX/2, X_MAX/2, Y_MAX/2, ROTATION_STEP)
         self.viewport_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, SCALE_STEP)
         self.pan_step = PAN_STEP
+        self.normalization_matrix()
+        self.denormalization_matrix()
 
 
     # --- Ui stuff ---
@@ -229,6 +236,17 @@ class MainWindow(object):
         self.viewport_frame.pixmap().fill(QtGui.QColor("black"))
         self.viewport_frame.update()
 
+    
+    def normalization_matrix(self) -> None:
+        window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
+        window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
+        self.window_normalization = normalize_window(self.x_shift_accumulator, self.y_shift_accumulator, window_width, window_height, self.rotation_accumulator)
+
+    def denormalization_matrix(self) -> None:
+        window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
+        window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
+        self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, self.rotation_accumulator)
+
 
     def draw_wireframe(self, wireframe: WireframeStructure, refresh:bool = False) -> None:
         if not refresh:
@@ -264,16 +282,34 @@ class MainWindow(object):
 
     def reset_viewport(self) -> None:
         self.scale_accumulator = 0
+        self.rotation_accumulator = 0
         self.window_coordinates.min_x = X_MIN
         self.window_coordinates.min_u = Y_MIN
         self.window_coordinates.max_x = X_MAX
         self.window_coordinates.max_y = Y_MAX
+
+        self.refresh_viewport()
         self.console_log("Reset!")
 
     def refresh_viewport(self) -> None:
         self.clear_viewport()
+        self.normalization_matrix()
+        window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
+        window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         for w in self.display_file:
+            w.normalized_values = self.window_coordinates
+            w.window_width = window_width
+            w.window_height = window_height
+            w.window_normalization = self.window_normalization
             self.draw_wireframe(w, True)
+
+    # --- Obj handling ---
+
+    def load_obj(self):
+        pass
+    
+    def save_obj(self):
+        pass
 
     # --- Navigation/transformation
 
@@ -313,7 +349,11 @@ class MainWindow(object):
     def rotation(self) -> None:
         rotation_amount = self.rotation_val_textEdit.toPlainText()
         self.rotation_accumulator = 0.0 if rotation_amount == '' else float(rotation_amount)
-        self.console_log('You rotate the window. Nothing happens.')
+        
+        for w in self.display_file:
+            w.window_view_up = self.rotation_accumulator
+        self.refresh_viewport()
+        self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
 
     # --- Buttons ---
 
@@ -327,6 +367,9 @@ class MainWindow(object):
         self.clear_btn.clicked.connect(self.clear_viewport)
         self.delete_btn.clicked.connect(self.delete_wireframe)
         self.reset_btn.clicked.connect(self.reset_viewport)
+
+        self.load_obj.clicked.connect(self.load_obj)
+        self.save_btn.clicked.connect(self.save_obj)
 
         # Extra buttons
         self.clear_log_btn.clicked.connect(self.log_browser.clear)

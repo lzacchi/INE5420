@@ -1,16 +1,21 @@
 import random
 import numpy as np
+
 from typing import List, Tuple, no_type_check
 from functools import reduce
 from enum import Enum
+from utils.coordinates import Coordinates
 from utils.math_utils import TransformationMatrix, calculate_object_center, get_transformation_matrix_from_enum, TransformationType
+from PyQt5.QtGui import QColor
 
-def get_homogeneous_coordinates(coordinates) -> np.ndarray:
+
+def get_homogeneous_coordinates(coordinates:list) -> np.ndarray:
     aux_matrix = np.ones((len(coordinates), 1))
     return np.hstack((coordinates, aux_matrix))
 
 class WireframeStructure():
-    def __init__(self, coordinates: list, struct_index: int) -> None:
+    def __init__(self, coordinates: list, struct_index: int, color: QColor, normalization_values:Coordinates , window_transformations: list, name: str) -> None:
+        self.name = name
         self.coordinates = coordinates
         self.vertices = len(self.coordinates)
 
@@ -23,6 +28,15 @@ class WireframeStructure():
         self.transformations: List[list] = []
         self.transformed_coordinates: List = []
         self.transformed_points: List = []
+        
+        self.window_view_up = 0.0  # Variation (in degrees) from standard "up" position
+        self.normalization_values = normalization_values
+        self.window_transformations = window_transformations
+        self.window_width = self.normalization_values.max_x - self.normalization_values.min_x
+        self.window_height = self.normalization_values.max_y - self.normalization_values.min_y
+
+        self.x_shift_accumulator = 0.0
+        self.y_shift_accumulator = 0.0
 
         self.struct_type = WireframeType(self.vertices).name
         self.struct_name = f"{self.struct_type}_{struct_index}"

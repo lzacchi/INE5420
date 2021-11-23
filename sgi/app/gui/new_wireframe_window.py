@@ -125,7 +125,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
         """
 
         structure_id = self.wireframe_idx
-        wireframe = WireframeStructure(self.points, structure_id)
+        wireframe = WireframeStructure(self.points, structure_id, QtGui.QColor.black, self.main_window.window_coordinates, self.main_window.window_normalization, 'zezinho')
 
         self.display_file.append(wireframe)
         self.main_window.display_file_list.insertItem(structure_id, wireframe.struct_name)
