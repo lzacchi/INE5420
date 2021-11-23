@@ -5,7 +5,12 @@ from typing import List, Tuple, no_type_check
 from functools import reduce
 from enum import Enum
 from utils.coordinates import Coordinates
-from utils.math_utils import TransformationMatrix, calculate_object_center, get_transformation_matrix_from_enum, TransformationType
+from utils.math_utils import (
+    TransformationMatrix,
+    calculate_object_center,
+    get_transformation_matrix_from_enum,
+    normalize_coordinate,
+    TransformationType)
 from PyQt5.QtGui import QColor
 
 
@@ -43,6 +48,7 @@ class WireframeStructure():
         self.color = WireframeColor(random.randrange(1, 7)).name # TODO update to selected color
 
         self.transform_to_points()
+        self.transform()
 
 
     def transform_to_points(self) -> None:
@@ -59,13 +65,14 @@ class WireframeStructure():
 
     def transform(self) -> None:
         coordinates = get_homogeneous_coordinates(self.coordinates)
+        coordinates = np.dot(coordinates, self.window_transformations)
         for (transform_type, params) in self.transformation_info:
             accum_translation:list = []
             if transform_type is TransformationType.ROTATION or transform_type is TransformationType.SCALING:
                 if transform_type is TransformationType.ROTATION:
                     rotate_around_origin = len(params) == 2 and params[1] is not None
                     if rotate_around_origin:
-                        t_x, t_y = params[1]
+                        t_x, t_y = normalize_coordinate(params[1], self.window_height, self.window_width) 
                     else:
                         # When the second param is empty we need to calculate the coordinates center
                         t_x, t_y, _ = calculate_object_center(coordinates)

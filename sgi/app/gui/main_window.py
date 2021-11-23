@@ -12,8 +12,8 @@ from utils.math_utils import normalize_window
 # Constants
 X_MIN = 0
 Y_MIN = 0
-X_MAX = 551
-Y_MAX = 381
+X_MAX = 550
+Y_MAX = 380
 SCALE_STEP = 0.1
 PAN_STEP = 0.1
 ROTATION_STEP = 1
@@ -34,6 +34,7 @@ class MainWindow(object):
         self.pan_step = PAN_STEP
         self.normalization_matrix()
         self.denormalization_matrix()
+        self.setupUi(self)
 
 
     # --- Ui stuff ---
@@ -245,7 +246,7 @@ class MainWindow(object):
     def denormalization_matrix(self) -> None:
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
-        self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, self.rotation_accumulator)
+        self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, -self.rotation_accumulator)
 
 
     def draw_wireframe(self, wireframe: WireframeStructure, refresh:bool = False) -> None:
@@ -253,6 +254,7 @@ class MainWindow(object):
             self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
         for point in range(wireframe.vertices):
+            wireframe.transform()
             # x1, y1 = wireframe.coordinates[point]
             x1, y1 = wireframe.transformed_coordinates[point]
 
@@ -281,10 +283,12 @@ class MainWindow(object):
 
 
     def reset_viewport(self) -> None:
-        self.scale_accumulator = 0
-        self.rotation_accumulator = 0
-        self.window_coordinates.min_x = X_MIN
-        self.window_coordinates.min_u = Y_MIN
+        self.scale_accumulator = 0.0
+        self.rotation_accumulator = 0.0
+        self.x_shift_accumulator = 0.0
+        self.y_shift_accumulator = 0.0
+        self.window_coordinates.min_x = -X_MAX/2
+        self.window_coordinates.min_y = -Y_MAX/2
         self.window_coordinates.max_x = X_MAX
         self.window_coordinates.max_y = Y_MAX
 
@@ -293,7 +297,7 @@ class MainWindow(object):
 
     def refresh_viewport(self) -> None:
         self.clear_viewport()
-        self.normalization_matrix()
+        self.denormalization_matrix()
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         for w in self.display_file:
@@ -305,27 +309,23 @@ class MainWindow(object):
 
     # --- Obj handling ---
 
-    def load_obj(self):
+    def load_obj(self) -> None:
         pass
     
-    def save_obj(self):
+    def save_obj(self) -> None:
         pass
 
     # --- Navigation/transformation
 
     def navigation(self, _up:bool = False, _left:bool = False, _down:bool = False, _right:bool = False) -> None:
         if _up:
-            self.window_coordinates.max_y += self.pan_step
-            self.window_coordinates.min_y += self.pan_step
+            self.y_shift_accumulator -= self.pan_step
         if _left:
-            self.window_coordinates.max_x -= self.pan_step
-            self.window_coordinates.min_x -= self.pan_step
+            self.x_shift_accumulator += self.pan_step
         if _down:
-            self.window_coordinates.max_y -= self.pan_step
-            self.window_coordinates.min_y -= self.pan_step
+            self.y_shift_accumulator += self.pan_step
         if _right:
-            self.window_coordinates.max_x += self.pan_step
-            self.window_coordinates.min_x += self.pan_step
+            self.x_shift_accumulator -= self.pan_step
 
         self.refresh_viewport()
 
@@ -368,7 +368,7 @@ class MainWindow(object):
         self.delete_btn.clicked.connect(self.delete_wireframe)
         self.reset_btn.clicked.connect(self.reset_viewport)
 
-        self.load_obj.clicked.connect(self.load_obj)
+        self.load_btn.clicked.connect(self.load_obj)
         self.save_btn.clicked.connect(self.save_obj)
 
         # Extra buttons
