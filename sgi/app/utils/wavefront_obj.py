@@ -81,19 +81,16 @@ class ObjReader:
     def parse_elements(self, params:list) -> None:
         points = []
         for v in params:
-            if v[0] == "-":
-                index = int(v)
-                points.append(self.vertices[index])
-            else:
-                index = int(v) -1
-                points.append(self.vertices[index])
+            index = int(v) if v[0] == "-" else int(v) - 1
+            points.append(self.vertices[index])
         
         no_color = not self.material
         if no_color:
             self.material = WHITE
         wireframe = WireframeStructure(
-            points, self.index, self.material, self.normalization_value, self.transformations, self.obj_str
+            points, self.index, self.material, self.normalization_value, self.transformations
         )
+        wireframe.set_name(self.obj_str)
         self.wireframes.append(wireframe)
         
         # Clear variables and increment index
@@ -120,15 +117,18 @@ class ObjReader:
     def split_and_parse_file(self, filepath: str, parser: Dict) -> None:
         with open(filepath) as f:
             lines = f.readlines()
-            for line in lines:
-                l = line.split()
+            for rawline in lines:
+                line = rawline.strip().split()
                 try:
-                    header = l[0] # Header should match the value in our ObjHeader enum
-                    params = l[1:]
-                    parser[header](params)
+                    if len(line) > 2:
+                        header = line[0] # Header should match the value in our ObjHeader enum
+                        params = line[1:]
+                        parser[header](params)
+                    else:
+                        continue # Skipping blank or invalid line
                 except Exception as e:
-                    error_index = lines.index(line)+1
-                    print(f"Error '{e}' parsing line {error_index} with content {line}")
+                    error_index = lines.index(rawline)+1
+                    print(f"Error '{e}' parsing line {error_index} with content {rawline}")
                     print("===")
                     traceback.print_exc()
                     print("===")

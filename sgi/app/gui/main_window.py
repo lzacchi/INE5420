@@ -258,6 +258,16 @@ class MainWindow(QMainWindow):
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, -self.rotation_accumulator)
 
+    # --- Drawing ---
+
+    def draw_line_segment(self, points: tuple, wireframe_color:Any) -> None:
+        p1, p2 = points
+        p1x, p1y = p1
+        p2x, p2y = p2
+        self.painter.setPen(QColor(255, 255, 255))
+        self.painter.drawLine(p1x, p1y, p2x, p2y)
+        self.viewport_frame.update()
+
 
     def draw_wireframe(self, wireframe: WireframeStructure, refresh:bool = False) -> None:
         if not refresh:
@@ -278,19 +288,19 @@ class MainWindow(QMainWindow):
             p1 = (x1_vp, y1_vp)
             p2 = (x2_vp, y2_vp)
 
-            self.draw_line_segment((p1, p2) , wireframe.color)
+            self.draw_line_segment((p1, p2), wireframe.color)
 
+    # --- Resetting ---
 
-    def draw_line_segment(self, points: tuple, wireframe_color:Any) -> None:
-        p1, p2 = points
-        p1x, p1y = p1
-        p2x, p2y = p2
-        self.painter.setPen(QColor(wireframe_color))
-        self.painter.drawLine(p1x, p1y, p2x, p2y)
-        self.viewport_frame.update()
+    # refresh entire canvas
+    def refresh_canvas(self) -> None:
+        self.denormalization_matrix()
+        self.reset_params()
+        self.redraw_wireframes()
+        self.console_log("Reset!")
 
-
-    def reset_viewport(self) -> None:
+    # reset to center
+    def reset_params(self) -> None:
         self.scale_accumulator = 0.0
         self.rotation_accumulator = 0.0
         self.x_shift_accumulator = 0.0
@@ -300,34 +310,33 @@ class MainWindow(QMainWindow):
         self.window_coordinates.max_x = X_MAX
         self.window_coordinates.max_y = Y_MAX
 
-        self.refresh_viewport()
-        self.console_log("Reset!")
-
-    def refresh_viewport(self) -> None:
+    def redraw_wireframes(self) -> None:
         self.clear_viewport()
         self.normalization_matrix()
+
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         for w in self.display_file:
-            w.normalized_values = self.window_coordinates
+            w.normalization_params = self.window_coordinates
             w.window_width = window_width
             w.window_height = window_height
-            w.window_normalization = self.window_normalization
+            w.window_transformations = self.window_normalization
             self.draw_wireframe(w, True)
 
     # --- Obj handling ---
 
     def load_obj(self) -> None:
-        filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0]
+        # filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0]
+        filename = "./sgi/resources/obj/diamond.obj" # DEBUG
         self.console_log(f"Loading file: {filename}")
-        objreader = ObjReader(filename, self.total_wireframes, self.window_coordinates, self.transformation_window)
+        objreader = ObjReader(filename, self.total_wireframes, self.window_coordinates, self.window_normalization)
         new_wf = objreader.wireframes
         for w in new_wf:
             self.display_file.append(w)
             self.draw_wireframe(w)
             self.display_file_list.insertItem(self.total_wireframes, w.name)
             self.total_wireframes+=1
-            self.console_log(f"Loaded wireframe: {w.name}")
+        self.console_log(f"Loaded wireframe: {w.name}")
 
     
     def save_obj(self) -> None:
@@ -345,7 +354,7 @@ class MainWindow(QMainWindow):
         if _right:
             self.x_shift_accumulator -= self.pan_step
 
-        self.refresh_viewport()
+        self.redraw_wireframes()
 
 
     def scale_canvas(self, step: float) -> None:
@@ -361,19 +370,14 @@ class MainWindow(QMainWindow):
 
         if _out:
             self.scale_canvas(SCALE_STEP)
-        self.refresh_viewport()
+        self.redraw_wireframes()
 
     def rotation(self) -> None:
-        self.aux_rotation()
-
-    def aux_rotation(self) -> None:
         rotation_amount = self.rotation_val_textEdit.toPlainText()
         self.rotation_accumulator = 0.0 if rotation_amount == '' else float(rotation_amount)
         
-        for w in self.display_file:
-            w.window_view_up = self.rotation_accumulator
         self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
-        self.refresh_viewport()
+        self.redraw_wireframes()
 
     # --- Buttons ---
 
@@ -383,10 +387,10 @@ class MainWindow(QMainWindow):
         self.transform_btn.clicked.connect(self.open_transformation_window)
 
         # Display File/ Viewport Buttons
-        self.redraw_btn.clicked.connect(self.refresh_viewport)
-        self.clear_btn.clicked.connect(self.clear_viewport)
+        self.redraw_btn.clicked.connect(self.redraw_wireframes)
+        # self.clear_btn.clicked.connect() # TODO: clear all wireframes from list
         self.delete_btn.clicked.connect(self.delete_wireframe)
-        self.reset_btn.clicked.connect(self.reset_viewport)
+        self.reset_btn.clicked.connect(self.refresh_canvas)
 
         self.load_btn.clicked.connect(self.load_obj)
         self.save_btn.clicked.connect(self.save_obj)
@@ -401,7 +405,6 @@ class MainWindow(QMainWindow):
         self.nav_up_btn.clicked.connect(lambda: self.navigation(_up=True))
         self.nav_left_btn.clicked.connect(lambda: self.navigation(_left=True))
         self.nav_down_btn.clicked.connect(lambda: self.navigation(_down=True))
-        self.redraw_btn.clicked.connect(self.refresh_viewport)
         self.nav_right_btn.clicked.connect(lambda: self.navigation(_right=True))
-
+        
         self.rotation_x_btn.clicked.connect(self.rotation)

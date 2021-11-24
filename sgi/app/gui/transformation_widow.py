@@ -234,7 +234,7 @@ class TransformationWindow(QtWidgets.QMainWindow):
     def apply_transformations(self) -> None:
         self.selected_object.transform()
         self.main_window.draw_wireframe(self.selected_object)
-        self.main_window.refresh_viewport()
+        self.main_window.redraw_wireframes()
 
 
     def clear_transformations(self) -> None:

@@ -19,8 +19,7 @@ def get_homogeneous_coordinates(coordinates:list) -> np.ndarray:
     return np.hstack((coordinates, aux_matrix))
 
 class WireframeStructure():
-    def __init__(self, coordinates: list, struct_index: int, color: QColor, normalization_values:Coordinates , window_transformations: list, name: str) -> None:
-        self.name = name
+    def __init__(self, coordinates: list, struct_index: int, color: QColor, normalization_params:Coordinates , window_transformations: list) -> None:
         self.coordinates = coordinates
         self.vertices = len(self.coordinates)
 
@@ -34,22 +33,20 @@ class WireframeStructure():
         self.transformed_coordinates: List = []
         self.transformed_points: List = []
         
-        self.window_view_up = 0.0  # Variation (in degrees) from standard "up" position
-        self.normalization_values = normalization_values
+        self.normalization_params = normalization_params
         self.window_transformations = window_transformations
-        self.window_width = self.normalization_values.max_x - self.normalization_values.min_x
-        self.window_height = self.normalization_values.max_y - self.normalization_values.min_y
-
-        self.x_shift_accumulator = 0.0
-        self.y_shift_accumulator = 0.0
+        self.window_width = self.normalization_params.max_x - self.normalization_params.min_x
+        self.window_height = self.normalization_params.max_y - self.normalization_params.min_y
 
         self.struct_type = WireframeType(self.vertices).name
         self.struct_name = f"{self.struct_type}_{struct_index}"
-        self.color = WireframeColor(random.randrange(1, 7)).name # TODO update to selected color
+        self.color = color
 
         self.transform_to_points()
         self.transform()
 
+    def set_name(self, name) -> None:
+        self.name = name
 
     def transform_to_points(self) -> None:
         self.transformations = []
@@ -91,7 +88,6 @@ class WireframeStructure():
                 operation_matrix = get_transformation_matrix_from_enum(transform_type)
                 accum_translation.append(operation_matrix(*params))
 
-            coordinates = np.dot(coordinates, self.window_transformations)
             transformed_points = []
             for point in coordinates:
                 reduced = tuple(reduce(np.dot, [point, *accum_translation]))
@@ -121,12 +117,3 @@ class WireframeType(Enum):
     @no_type_check
     def _missing_(cls, value):
         return WireframeType.POLYGON
-
-class WireframeColor(Enum):
-    """Uses PyQt5.QtCore.Qt colors"""
-    white = 1
-    red = 2
-    green = 3
-    cyan = 4
-    magenta = 5
-    yellow = 6
