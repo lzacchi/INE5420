@@ -232,33 +232,20 @@ class MainWindow(QMainWindow):
             return
         self.transformation_window.open_new(current_object)
 
-
-    def delete_wireframe(self) -> None:
-        try:
-            self.display_file.pop()
-        except IndexError:
-            self.console_log("There are no wireframe structures to delete.")
-
-        self.console_log(f"Deleting structure: {self.display_file_list.currentRow()}")
-        self.display_file_list.takeItem(self.display_file_list.currentRow())
-
-
-    def clear_viewport(self) -> None:
-        self.viewport_frame.pixmap().fill(QtGui.QColor("black"))
-        self.viewport_frame.update()
-
     
     def normalization_matrix(self) -> None:
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         self.window_normalization = normalize_window(self.x_shift_accumulator, self.y_shift_accumulator, window_width, window_height, self.rotation_accumulator)
 
+
     def denormalization_matrix(self) -> None:
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, -self.rotation_accumulator)
 
-    # --- Drawing ---
+    
+    # --- Wireframe Structures ---
 
     def draw_line_segment(self, points: tuple, wireframe_color:Any) -> None:
         p1, p2 = points
@@ -274,6 +261,7 @@ class MainWindow(QMainWindow):
             self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
         for point in range(wireframe.vertices):
+            wireframe.transform()
             x1, y1 = wireframe.transformed_coordinates[point]
 
             # viewport transformation
@@ -289,10 +277,47 @@ class MainWindow(QMainWindow):
             p2 = (x2_vp, y2_vp)
 
             self.draw_line_segment((p1, p2), wireframe.color)
+    
+
+    def redraw_wireframes(self) -> None:
+        self.clear_viewport()
+        self.normalization_matrix()
+
+        window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
+        window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
+        for w in self.display_file:
+            w.normalization_params = self.window_coordinates
+            w.window_width = window_width
+            w.window_height = window_height
+            w.window_transformations = self.window_normalization
+            self.draw_wireframe(w, True)
+
+
+    def delete_wireframe(self, _log:bool=True) -> None:
+        try:
+            self.display_file.pop()
+        except IndexError:
+            self.console_log("There are no wireframe structures to delete.")
+
+        if _log:
+            self.console_log(f"Deleting structure: {self.display_file_list.currentRow()}")
+            
+        self.display_file_list.takeItem(self.display_file_list.currentRow())
 
     # --- Resetting ---
 
     # refresh entire canvas
+    def clear_viewport(self, _delete:bool=False) -> None:
+        if _delete:
+            wireframes = len(self.display_file)
+            for w in range(wireframes):
+                self.delete_wireframe(_log=False)
+            self.display_file_list.clear()
+            self.console_log(f"Deleting {wireframes} wireframes from Display File")
+            self.console_log("Viewport cleared")
+        self.viewport_frame.pixmap().fill(QtGui.QColor("black"))
+        self.viewport_frame.update()
+
     def refresh_canvas(self) -> None:
         self.denormalization_matrix()
         self.reset_params()
@@ -309,19 +334,6 @@ class MainWindow(QMainWindow):
         self.window_coordinates.min_y = -Y_MAX/2
         self.window_coordinates.max_x = X_MAX
         self.window_coordinates.max_y = Y_MAX
-
-    def redraw_wireframes(self) -> None:
-        self.clear_viewport()
-        self.normalization_matrix()
-
-        window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
-        window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
-        for w in self.display_file:
-            w.normalization_params = self.window_coordinates
-            w.window_width = window_width
-            w.window_height = window_height
-            w.window_transformations = self.window_normalization
-            self.draw_wireframe(w, True)
 
     # --- Obj handling ---
 
@@ -374,10 +386,11 @@ class MainWindow(QMainWindow):
 
     def rotation(self) -> None:
         rotation_amount = self.rotation_val_textEdit.toPlainText()
-        self.rotation_accumulator = 0.0 if rotation_amount == '' else float(rotation_amount)
+        self.rotation_accumulator += 0.0 if rotation_amount == '' else float(rotation_amount)
         
         self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
         self.redraw_wireframes()
+
 
     # --- Buttons ---
 
@@ -388,7 +401,7 @@ class MainWindow(QMainWindow):
 
         # Display File/ Viewport Buttons
         self.redraw_btn.clicked.connect(self.redraw_wireframes)
-        # self.clear_btn.clicked.connect() # TODO: clear all wireframes from list
+        self.clear_btn.clicked.connect(lambda: self.clear_viewport(_delete=True)) # TODO: clear all wireframes from list
         self.delete_btn.clicked.connect(self.delete_wireframe)
         self.reset_btn.clicked.connect(self.refresh_canvas)
 
