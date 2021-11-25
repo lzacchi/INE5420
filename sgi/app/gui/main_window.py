@@ -386,7 +386,7 @@ class MainWindow(QMainWindow):
 
     def rotation(self) -> None:
         rotation_amount = self.rotation_val_textEdit.toPlainText()
-        self.rotation_accumulator += 0.0 if rotation_amount == '' else float(rotation_amount)
+        self.rotation_accumulator += (0.0 if rotation_amount == '' else float(rotation_amount))%360
         
         self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
         self.redraw_wireframes()
