@@ -5,6 +5,7 @@ from utils.wireframe_structure import WireframeStructure
 
 
 
+
 class NewWireframeWindow(QtWidgets.QDialog):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()

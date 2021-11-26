@@ -7,22 +7,12 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import QColor
 from typing import List, Dict, Union
 from utils.wireframe_structure import WireframeStructure
+from utils.obj_header import ObjHeader
 
 
 WHITE = QColor(255, 255, 255)
 
-class ObjHeader(Enum):
-    MTLLIB = "mtllib"
-    USEMTL = "usemtl"
-    OBJ_NAME = "o"
-    VERTICE = "v"
-    POINT = "p"
-    LINE = "l"
-    FACE = "f"
-    # W = auto() ?
 
-    def __str__(self) -> str:
-        return super().__str__()
 
 
 class ObjReader:
@@ -120,7 +110,7 @@ class ObjReader:
             for rawline in lines:
                 line = rawline.strip().split()
                 try:
-                    if len(line) > 2:
+                    if len(line) >= 2:
                         header = line[0] # Header should match the value in our ObjHeader enum
                         params = line[1:]
                         parser[header](params)
@@ -136,18 +126,30 @@ class ObjReader:
 
 
 class ObjWriter:
-    # TODO dar uma melhorada nessa api aqui
-    def __init__(self, scene_name: List[str], wireframes: list) -> None:
-        self.scene_name: list = []
-        self.wireframes: list = []
+    def __init__(self, wireframes: list, scene_name: str, denormalization_matrix: list) -> None:
+        self.scene_name = scene_name
+        self.wireframes = wireframes
+        self.denormalization_matrix = denormalization_matrix
 
     def __str__(self) -> str:
-        return f"{self.scene_name}"
+        return f"Saving scene: {self.scene_name}"
 
     def write_obj(self) -> None:
-        pass
+        material_line = f"{ObjHeader.MTLLIB.value} {self.scene_name}.mtl\n"
+        obj_file = [material_line]
+        material_file: List[str] = []
+
+        for w in self.wireframes:
+            obj_info, material_info = w.to_obj_str(self.denormalization_matrix)
+            obj_file.extend(obj_info)
+            material_file.extend(material_info)
+
+        filepath = str(Path().absolute() / "resources" / "obj" / self.scene_name)
+        self.save_file(filepath + ".obj", obj_file)
+        self.save_file(filepath + ".mtl", material_file)
+
 
     def save_file(self, filename: str, lines: List[str]) -> None:
         with open(filename, "w") as writer:
-            for line in lines:
-                writer.write(line)
+            for l in lines:
+                writer.write(l)

@@ -4,6 +4,7 @@ import numpy as np
 from typing import List, Tuple, no_type_check
 from functools import reduce
 from enum import Enum
+from PyQt5.QtGui import QColor
 from utils.coordinates import Coordinates
 from utils.math_utils import (
     TransformationMatrix,
@@ -11,7 +12,7 @@ from utils.math_utils import (
     get_transformation_matrix_from_enum,
     normalize_coordinate,
     TransformationType)
-from PyQt5.QtGui import QColor
+from utils.obj_header import ObjHeader
 
 
 def get_homogeneous_coordinates(coordinates:list) -> np.ndarray:
@@ -45,8 +46,11 @@ class WireframeStructure():
         self.transform_to_points()
         self.transform()
 
-    def set_name(self, name) -> None:
+    def set_name(self, name: str) -> None:
         self.name = name
+
+    def get_dimension(self) -> int:
+        return len(self.coordinates)
 
     def transform_to_points(self) -> None:
         self.transformations = []
@@ -101,6 +105,38 @@ class WireframeStructure():
         aux = coordinates[:, :-1]
         self.transformed_coordinates = list(map(lambda x : tuple(x), aux))
         return # breakpoint for testing
+
+
+    def to_obj_str(self, denormalization_matrix: list) -> Tuple[List[str], List[str]]:
+        coordinates = get_homogeneous_coordinates(self.transformed_coordinates)
+        denormalizated_coordinates = np.dot(coordinates, denormalization_matrix)
+
+        # Write file headers
+        obj_info = [
+            f"{ObjHeader.OBJ_NAME.value} {self.name}",
+            f"{ObjHeader.USEMTL.value} {self.name}_mtl", # material files must always end their name with '_mtl'
+        ]
+        list(map(lambda v: obj_info.append(f"{ObjHeader.VERTICE.value} {v[0]} {v[1]} 0.0"), denormalizated_coordinates))
+        
+        # Gather point info
+        points = ["-" + str(n+1) for n in range(self.get_dimension())]
+        points.reverse() # First defined points first
+        line = [ObjHeader.FACE.value]
+        line.extend(points)
+        points_line = " ".join(line)
+        obj_info.append(points_line)
+
+        # Make material info
+        r, g, b, a = self.color.getRgb()
+        material_info = [
+            f"{ObjHeader.NEWMTL.value} {self.name}_mtl",
+            f"{ObjHeader.KD.value} {r/255} {g/255} {b/255} {a/255}"
+        ]
+        
+        return (
+            list(map(lambda x: x + "\n", obj_info)),
+            list(map(lambda x: x + "\n", material_info)),
+        )
 
 
 class WireframeType(Enum):

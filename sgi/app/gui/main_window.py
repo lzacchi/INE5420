@@ -2,14 +2,15 @@ from datetime import datetime
 from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QFileDialog, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QInputDialog
 from gui.new_wireframe_window import NewWireframeWindow
 from gui.transformation_widow import TransformationWindow
 from utils.coordinates import Coordinates
 from utils.viewport_transformation import x_viewport, y_viewport
 from utils.wireframe_structure import WireframeStructure
 from utils.math_utils import normalize_window
-from utils.wavefront_obj import ObjReader
+from utils.wavefront_obj import ObjReader, ObjWriter
+from utils.obj_header import ObjHeader
 
 
 # Constants
@@ -338,9 +339,11 @@ class MainWindow(QMainWindow):
     # --- Obj handling ---
 
     def load_obj(self) -> None:
-        # filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0]
-        filename = "./sgi/resources/obj/diamond.obj" # DEBUG
+        filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0]
+        # filename = "./sgi/resources/obj/house.obj" # DEBUG
+        # filename = "./resources/obj/house.obj" # DEBUG
         self.console_log(f"Loading file: {filename}")
+        
         objreader = ObjReader(filename, self.total_wireframes, self.window_coordinates, self.window_normalization)
         new_wf = objreader.wireframes
         for w in new_wf:
@@ -348,11 +351,14 @@ class MainWindow(QMainWindow):
             self.draw_wireframe(w)
             self.display_file_list.insertItem(self.total_wireframes, w.name)
             self.total_wireframes+=1
-        self.console_log(f"Loaded wireframe: {w.name}")
 
-    
     def save_obj(self) -> None:
-        pass
+        filename, yes = QInputDialog.getText(self, "Text Input Dialog", "Name:")
+        if yes:
+            objwriter = ObjWriter(self.display_file, filename, self.window_denormalization)
+            objwriter.write_obj()
+            self.console_log(f"Saved scene as {filename}")
+
 
     # --- Navigation/transformation
 
@@ -405,6 +411,7 @@ class MainWindow(QMainWindow):
         self.delete_btn.clicked.connect(self.delete_wireframe)
         self.reset_btn.clicked.connect(self.refresh_canvas)
 
+        # Wavefront obj files
         self.load_btn.clicked.connect(self.load_obj)
         self.save_btn.clicked.connect(self.save_obj)
 
