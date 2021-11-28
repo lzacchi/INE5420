@@ -33,7 +33,7 @@ class WireframeStructure():
         self.transformations: List[list] = []
         self.transformed_coordinates: List = []
         self.transformed_points: List = []
-        
+
         self.normalization_params = normalization_params
         self.window_transformations = window_transformations
         self.window_width = self.normalization_params.max_x - self.normalization_params.min_x
@@ -67,14 +67,14 @@ class WireframeStructure():
     def transform(self) -> None:
         coordinates = get_homogeneous_coordinates(self.coordinates)
         coordinates = np.dot(coordinates, self.window_transformations)
-        
+
         for (transform_type, params) in self.transformation_info:
             accum_translation:list = []
             if transform_type is TransformationType.ROTATION or transform_type is TransformationType.SCALING:
                 if transform_type is TransformationType.ROTATION:
                     rotate_around_origin = len(params) == 2 and params[1] is not None
                     if rotate_around_origin:
-                        t_x, t_y = normalize_coordinate(params[1], self.window_height, self.window_width) 
+                        t_x, t_y = normalize_coordinate(params[1], self.window_height, self.window_width)
                     else:
                         # When the second param is empty we need to calculate the coordinates center
                         t_x, t_y, _ = calculate_object_center(coordinates)
@@ -117,7 +117,7 @@ class WireframeStructure():
             f"{ObjHeader.USEMTL.value} {self.name}_mtl", # material files must always end their name with '_mtl'
         ]
         list(map(lambda v: obj_info.append(f"{ObjHeader.VERTICE.value} {v[0]} {v[1]} 0.0"), denormalizated_coordinates))
-        
+
         # Gather point info
         points = ["-" + str(n+1) for n in range(self.get_dimension())]
         points.reverse() # First defined points first
@@ -132,7 +132,7 @@ class WireframeStructure():
             f"{ObjHeader.NEWMTL.value} {self.name}_mtl",
             f"{ObjHeader.KD.value} {r/255} {g/255} {b/255} {a/255}"
         ]
-        
+
         return (
             list(map(lambda x: x + "\n", obj_info)),
             list(map(lambda x: x + "\n", material_info)),

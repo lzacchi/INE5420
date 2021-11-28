@@ -10,6 +10,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
     def __init__(self, parent:Any = None) -> None:
         super().__init__()
         self.wireframe_idx = 0
+        self.wireframe_color = QtCore.Qt.white
         self.main_window = parent  # Exchange information with Main Window
         self.display_file = self.main_window.display_file
         self.points: list[tuple] = []
@@ -22,18 +23,32 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_label = QtWidgets.QLabel(NewWireframeWindow)
         self.new_form_label.setGeometry(QtCore.QRect(20, 20, 111, 18))
         self.new_form_label.setObjectName("new_form_label")
+
         self.new_form_x_label = QtWidgets.QLabel(NewWireframeWindow)
         self.new_form_x_label.setGeometry(QtCore.QRect(30, 60, 58, 18))
         self.new_form_x_label.setObjectName("new_form_x_label")
         self.new_form_x_text = QtWidgets.QTextEdit(NewWireframeWindow)
         self.new_form_x_text.setGeometry(QtCore.QRect(50, 50, 51, 31))
         self.new_form_x_text.setObjectName("new_form_x_text")
-        self.new_form_y_text = QtWidgets.QTextEdit(NewWireframeWindow)
-        self.new_form_y_text.setGeometry(QtCore.QRect(50, 100, 51, 31))
-        self.new_form_y_text.setObjectName("new_form_y_text")
+
         self.new_form_y_label = QtWidgets.QLabel(NewWireframeWindow)
         self.new_form_y_label.setGeometry(QtCore.QRect(30, 110, 58, 18))
         self.new_form_y_label.setObjectName("new_form_y_label")
+        self.new_form_y_text = QtWidgets.QTextEdit(NewWireframeWindow)
+        self.new_form_y_text.setGeometry(QtCore.QRect(50, 100, 51, 31))
+        self.new_form_y_text.setObjectName("new_form_y_text")
+
+        self.set_color_btn = QtWidgets.QPushButton(NewWireframeWindow)
+        self.set_color_btn.setGeometry(30, 160, 80, 26)
+        self.set_color_btn.setObjectName("set_color_btn")
+
+        # self.new_form_z_label = QtWidgets.QLabel(NewWireframeWindow)
+        # self.new_form_z_label.setGeometry(QtCore.QRect(30, 160, 58, 18))
+        # self.new_form_z_label.setObjectName("new_form_z_label")
+        # self.new_form_z_text = QtWidgets.QTextEdit(NewWireframeWindow)
+        # self.new_form_z_text.setGeometry(QtCore.QRect(50, 150, 51, 31))
+        # self.new_form_z_text.setObjectName("new_form_z_text")
+
         self.new_form_add_btn = QtWidgets.QPushButton(NewWireframeWindow)
         self.new_form_add_btn.setGeometry(QtCore.QRect(30, 260, 80, 26))
         self.new_form_add_btn.setObjectName("new_form_add_btn")
@@ -51,12 +66,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_draw_btn = QtWidgets.QPushButton(NewWireframeWindow)
         self.new_form_draw_btn.setGeometry(QtCore.QRect(240, 260, 80, 26))
         self.new_form_draw_btn.setObjectName("new_form_draw_btn")
-        # self.new_form_z_label = QtWidgets.QLabel(NewWireframeWindow)
-        # self.new_form_z_label.setGeometry(QtCore.QRect(30, 160, 58, 18))
-        # self.new_form_z_label.setObjectName("new_form_z_label")
-        # self.new_form_z_text = QtWidgets.QTextEdit(NewWireframeWindow)
-        # self.new_form_z_text.setGeometry(QtCore.QRect(50, 150, 51, 31))
-        # self.new_form_z_text.setObjectName("new_form_z_text")
+
         self.new_form_delete_btn = QtWidgets.QPushButton(NewWireframeWindow)
         self.new_form_delete_btn.setGeometry(QtCore.QRect(160, 260, 61, 26))
         self.new_form_delete_btn.setObjectName("new_form_delete_btn")
@@ -77,6 +87,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.new_form_add_btn.setText(_translate("NewWireframeWindow", "Add Point"))
         self.new_form_points_list_label.setText(_translate("NewWireframeWindow", "Your points:"))
         self.new_form_draw_btn.setText(_translate("NewWireframeWindow", "Draw"))
+        self.set_color_btn.setText(_translate("NewWireframeWindow", "Set Color"))
         # self.new_form_z_label.setText(_translate("NewWireframeWindow", "Z:"))
         self.new_form_delete_btn.setText(_translate("NewWireframeWindow", "Delete"))
 
@@ -89,6 +100,11 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.points = []
         self.show()
 
+    def set_color(self) -> None:
+        color = QtWidgets.QColorDialog.getColor()
+        if color.isValid():
+            self.wireframe_color = color
+        print("set color")
 
     def add_point(self) -> None:
         text_x = self.new_form_x_text.toPlainText()
@@ -126,7 +142,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
         """
 
         structure_id = self.wireframe_idx
-        wireframe = WireframeStructure(self.points, structure_id, QtGui.QColor.black, self.main_window.window_coordinates, self.main_window.window_normalization)
+        wireframe = WireframeStructure(self.points, structure_id, self.wireframe_color, self.main_window.window_coordinates, self.main_window.window_normalization)
 
         self.display_file.append(wireframe)
         self.main_window.display_file_list.insertItem(structure_id, wireframe.struct_name)
@@ -142,10 +158,7 @@ class NewWireframeWindow(QtWidgets.QDialog):
         self.close()
 
     def connect_signals(self) -> None:
+        self.set_color_btn.clicked.connect(self.set_color)
         self.new_form_add_btn.clicked.connect(self.add_point)
         self.new_form_delete_btn.clicked.connect(self.delete_point)
         self.new_form_draw_btn.clicked.connect(self.draw_structure)
-
-    def set_color(self) -> None:
-        # TODO (optional)
-        pass

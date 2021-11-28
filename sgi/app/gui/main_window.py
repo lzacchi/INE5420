@@ -16,8 +16,9 @@ from utils.obj_header import ObjHeader
 # Constants
 X_MIN = 0
 Y_MIN = 0
-X_MAX = 550
-Y_MAX = 380
+X_MAX = 705
+Y_MAX = 460
+CLIPPING_BORDER = 10
 SCALE_STEP = 0.1
 PAN_STEP = 10
 ROTATION_STEP = 0.1
@@ -29,19 +30,32 @@ class MainWindow(QMainWindow):
         self.display_file: list = []
         self.window_normalization: list = []
         self.window_denormalization: list = []
-        
+
         self.total_wireframes = 0
         self.scale_accumulator = 0.0
         self.rotation_accumulator = 0.0
         self.x_shift_accumulator = 0.0
         self.y_shift_accumulator = 0.0
         self.pan_step = PAN_STEP
-        
+
         self.new_wireframe = NewWireframeWindow(self)
         self.transformation_window = TransformationWindow(self)
-        
-        self.window_coordinates = Coordinates(-X_MAX/2, -Y_MAX/2, X_MAX/2, Y_MAX/2, ROTATION_STEP)
-        self.viewport_coordinates = Coordinates(X_MIN, Y_MIN, X_MAX, Y_MAX, SCALE_STEP)
+
+        self.window_coordinates = Coordinates(
+                                    -X_MAX/2,
+                                    -Y_MAX/2,
+                                    X_MAX/2,
+                                    Y_MAX/2,
+                                    ROTATION_STEP
+                                  )
+
+        self.viewport_coordinates = Coordinates(
+                                      X_MIN + CLIPPING_BORDER,
+                                      Y_MIN + CLIPPING_BORDER,
+                                      X_MAX - CLIPPING_BORDER,
+                                      Y_MAX - CLIPPING_BORDER,
+                                      SCALE_STEP
+                                    )
 
         self.normalization_matrix()
         self.denormalization_matrix()
@@ -52,14 +66,14 @@ class MainWindow(QMainWindow):
 
     def setupUi(self, MainWindow:QMainWindow) -> None:
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(955, 675)
 
         # Qt initialization
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(10, 10, 71, 21))
-        self.label.setObjectName("label")
+        self.label_display_file = QtWidgets.QLabel(self.centralwidget)
+        self.label_display_file.setGeometry(QtCore.QRect(10, 10, 71, 21))
+        self.label_display_file.setObjectName("label_display_file")
         self.display_file_list = QtWidgets.QListWidget(self.centralwidget)
         self.display_file_list.setGeometry(QtCore.QRect(10, 30, 131, 198))
         self.display_file_list.setObjectName("display_file_list")
@@ -115,7 +129,7 @@ class MainWindow(QMainWindow):
         self.nav_zoom_out_btn.setObjectName("nav_zoom_out_btn")
 
         self.viewport_frame = QtWidgets.QLabel(self.centralwidget)
-        self.viewport_frame.setGeometry(QtCore.QRect(240, 40, 550, 380))
+        self.viewport_frame.setGeometry(QtCore.QRect(240, 40, 705, 460))
         self.viewport_frame.setText("")
         self.viewport_frame.setObjectName("viewport_frame")
 
@@ -123,23 +137,38 @@ class MainWindow(QMainWindow):
         self.transform_btn.setGeometry(QtCore.QRect(150, 230, 71, 31))
         self.transform_btn.setObjectName("transform_btn")
 
-        viewport_area = QtGui.QPixmap(551,381)
+        self.clip_line = QtWidgets.QFrame(self.centralwidget)
+        self.clip_line.setGeometry(QtCore.QRect(10, 520, 211, 20))
+        self.clip_line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.clip_line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.clip_line.setObjectName("clip_line")
+        self.label_clipping = QtWidgets.QLabel(self.centralwidget)
+        self.label_clipping.setGeometry(QtCore.QRect(10, 540, 53, 19))
+        self.label_clipping.setObjectName("label_clipping")
+        self.radio_btn_clipping1 = QtWidgets.QRadioButton(self.centralwidget)
+        self.radio_btn_clipping1.setGeometry(QtCore.QRect(30, 570, 106, 26))
+        self.radio_btn_clipping1.setObjectName("radio_btn_clipping1")
+        self.radio_btn_clipping2 = QtWidgets.QRadioButton(self.centralwidget)
+        self.radio_btn_clipping2.setGeometry(QtCore.QRect(30, 600, 106, 26))
+        self.radio_btn_clipping2.setObjectName("radio_btn_clipping2")
+
+        viewport_area = QtGui.QPixmap(705,460)
         viewport_area.fill(QtGui.QColor("black"))
 
         self.viewport_frame.setPixmap(viewport_area)
 
         self.painter = QtGui.QPainter(self.viewport_frame.pixmap())
 
-        self.line_2 = QtWidgets.QFrame(self.centralwidget)
-        self.line_2.setGeometry(QtCore.QRect(220, 30, 20, 541))
-        self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
+        self.viewport_line = QtWidgets.QFrame(self.centralwidget)
+        self.viewport_line.setGeometry(QtCore.QRect(220, 30, 20, 621))
+        self.viewport_line.setFrameShape(QtWidgets.QFrame.VLine)
+        self.viewport_line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.viewport_line.setObjectName("viewport_line")
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(240, 10, 71, 21))
         self.label_3.setObjectName("label_3")
         self.log_browser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.log_browser.setGeometry(QtCore.QRect(240, 430, 551, 141))
+        self.log_browser.setGeometry(QtCore.QRect(240, 510, 705, 140))
         self.log_browser.setObjectName("log_browser")
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setGeometry(QtCore.QRect(10, 400, 211, 16))
@@ -167,7 +196,7 @@ class MainWindow(QMainWindow):
         self.rotation_val_textEdit.setObjectName("rodation_val_textEdit")
 
         self.clear_log_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.clear_log_btn.setGeometry(QtCore.QRect(750, 550, 41, 21))
+        self.clear_log_btn.setGeometry(QtCore.QRect(900, 625, 41, 21))
         self.clear_log_btn.setObjectName("clear_log_btn")
 
         MainWindow.setCentralWidget(self.centralwidget)
@@ -177,13 +206,14 @@ class MainWindow(QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.draw_clipping_borders()
         self.connect_signals()
 
 
     def retranslateUi(self, MainWindow:Any) -> None:
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "INE5420 SGI"))
-        self.label.setText(_translate("MainWindow", "Display File"))
+        self.label_display_file.setText(_translate("MainWindow", "Display File"))
         self.new_btn.setText(_translate("MainWindow", "New"))
         self.delete_btn.setText(_translate("MainWindow", "Delete"))
         self.clear_btn.setText(_translate("MainWindow", "Clear"))
@@ -207,6 +237,10 @@ class MainWindow(QMainWindow):
         # self.rotation_y_btn.setText(_translate("MainWindow", "Y"))
         # self.rotation_z_btn.setText(_translate("MainWindow", "Z"))
         self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
+
+        self.label_clipping.setText(_translate("MainWindow", "Clipping"))
+        self.radio_btn_clipping1.setText(_translate("MainWindow", "Option1"))
+        self.radio_btn_clipping2.setText(_translate("MainWindow", "Option2"))
 
         self.clear_log_btn.setText(_translate("MainWindow", "Clear"))
         self.transform_btn.setText(_translate("MainWindow", "Transform"))
@@ -233,7 +267,7 @@ class MainWindow(QMainWindow):
             return
         self.transformation_window.open_new(current_object)
 
-    
+
     def normalization_matrix(self) -> None:
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
@@ -245,14 +279,36 @@ class MainWindow(QMainWindow):
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
         self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, -self.rotation_accumulator)
 
-    
+
+    def draw_clipping_borders(self) -> None:
+        border = CLIPPING_BORDER
+        x_min = border
+        y_min = border
+        x_max = self.viewport_coordinates.max_x
+        y_max = self.viewport_coordinates.max_y
+        bordered_window = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
+
+        border_points = len(bordered_window)
+
+        for point in range(border_points):
+            p1 = bordered_window[point]
+            p2 = bordered_window[(point + 1) % border_points]
+
+            self.draw_line_segment((p1, p2), QtCore.Qt.blue, _border=True)
+
+
     # --- Wireframe Structures ---
 
-    def draw_line_segment(self, points: tuple, wireframe_color:Any) -> None:
+    def draw_line_segment(self, points: tuple, wireframe_color:Any, _border:bool=False) -> None:
         p1, p2 = points
         p1x, p1y = p1
         p2x, p2y = p2
-        self.painter.setPen(QColor(255, 255, 255))
+
+        self.painter.setPen(wireframe_color)
+
+        if _border:
+            self.painter.setPen(QtGui.QPen(wireframe_color, 2))
+
         self.painter.drawLine(p1x, p1y, p2x, p2y)
         self.viewport_frame.update()
 
@@ -278,7 +334,7 @@ class MainWindow(QMainWindow):
             p2 = (x2_vp, y2_vp)
 
             self.draw_line_segment((p1, p2), wireframe.color)
-    
+
 
     def redraw_wireframes(self) -> None:
         self.clear_viewport()
@@ -292,6 +348,7 @@ class MainWindow(QMainWindow):
             w.window_height = window_height
             w.window_transformations = self.window_normalization
             self.draw_wireframe(w, True)
+        self.draw_clipping_borders()
 
 
     def delete_wireframe(self, _log:bool=True) -> None:
@@ -302,7 +359,7 @@ class MainWindow(QMainWindow):
 
         if _log:
             self.console_log(f"Deleting structure: {self.display_file_list.currentRow()}")
-            
+
         self.display_file_list.takeItem(self.display_file_list.currentRow())
 
     # --- Resetting ---
@@ -318,6 +375,7 @@ class MainWindow(QMainWindow):
             self.console_log("Viewport cleared")
         self.viewport_frame.pixmap().fill(QtGui.QColor("black"))
         self.viewport_frame.update()
+        self.draw_clipping_borders()
 
     def refresh_canvas(self) -> None:
         self.denormalization_matrix()
@@ -343,7 +401,7 @@ class MainWindow(QMainWindow):
         # filename = "./sgi/resources/obj/house.obj" # DEBUG
         # filename = "./resources/obj/house.obj" # DEBUG
         self.console_log(f"Loading file: {filename}")
-        
+
         objreader = ObjReader(filename, self.total_wireframes, self.window_coordinates, self.window_normalization)
         new_wf = objreader.wireframes
         for w in new_wf:
@@ -351,6 +409,7 @@ class MainWindow(QMainWindow):
             self.draw_wireframe(w)
             self.display_file_list.insertItem(self.total_wireframes, w.name)
             self.total_wireframes+=1
+        self.draw_clipping_borders()
 
     def save_obj(self) -> None:
         filename, yes = QInputDialog.getText(self, "Text Input Dialog", "Name:")
@@ -393,7 +452,7 @@ class MainWindow(QMainWindow):
     def rotation(self) -> None:
         rotation_amount = self.rotation_val_textEdit.toPlainText()
         self.rotation_accumulator += (0.0 if rotation_amount == '' else float(rotation_amount))%360
-        
+
         self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
         self.redraw_wireframes()
 
@@ -426,5 +485,5 @@ class MainWindow(QMainWindow):
         self.nav_left_btn.clicked.connect(lambda: self.navigation(_left=True))
         self.nav_down_btn.clicked.connect(lambda: self.navigation(_down=True))
         self.nav_right_btn.clicked.connect(lambda: self.navigation(_right=True))
-        
+
         self.rotation_x_btn.clicked.connect(self.rotation)
