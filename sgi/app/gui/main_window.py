@@ -11,6 +11,7 @@ from utils.wireframe_structure import WireframeStructure
 from utils.math_utils import normalize_window
 from utils.wavefront_obj import ObjReader, ObjWriter
 from utils.obj_header import ObjHeader
+from utils.clipping.clipping import ClippingMethod
 
 
 # Constants
@@ -30,6 +31,7 @@ class MainWindow(QMainWindow):
         self.display_file: list = []
         self.window_normalization: list = []
         self.window_denormalization: list = []
+        self.clipping_method = ClippingMethod.NONE
 
         self.total_wireframes = 0
         self.scale_accumulator = 0.0
@@ -145,8 +147,11 @@ class MainWindow(QMainWindow):
         self.label_clipping = QtWidgets.QLabel(self.centralwidget)
         self.label_clipping.setGeometry(QtCore.QRect(10, 540, 53, 19))
         self.label_clipping.setObjectName("label_clipping")
+        self.radio_btn_clipping0 = QtWidgets.QRadioButton(self.centralwidget)
+        self.radio_btn_clipping0.setGeometry(QtCore.QRect(30, 630, 106, 26))
+        self.radio_btn_clipping0.setObjectName("radio_btn_clipping0")
         self.radio_btn_clipping1 = QtWidgets.QRadioButton(self.centralwidget)
-        self.radio_btn_clipping1.setGeometry(QtCore.QRect(30, 570, 106, 26))
+        self.radio_btn_clipping1.setGeometry(QtCore.QRect(30, 570, 125, 26))
         self.radio_btn_clipping1.setObjectName("radio_btn_clipping1")
         self.radio_btn_clipping2 = QtWidgets.QRadioButton(self.centralwidget)
         self.radio_btn_clipping2.setGeometry(QtCore.QRect(30, 600, 106, 26))
@@ -239,8 +244,9 @@ class MainWindow(QMainWindow):
         self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
 
         self.label_clipping.setText(_translate("MainWindow", "Clipping"))
-        self.radio_btn_clipping1.setText(_translate("MainWindow", "Option1"))
-        self.radio_btn_clipping2.setText(_translate("MainWindow", "Option2"))
+        self.radio_btn_clipping1.setText(_translate("MainWindow", "Cohen Sutherland"))
+        self.radio_btn_clipping2.setText(_translate("MainWindow", "Liang-Barsky"))
+        self.radio_btn_clipping0.setText(_translate("MainWindow", "Don't clip"))
 
         self.clear_log_btn.setText(_translate("MainWindow", "Clear"))
         self.transform_btn.setText(_translate("MainWindow", "Transform"))
@@ -280,6 +286,7 @@ class MainWindow(QMainWindow):
         self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, -self.rotation_accumulator)
 
 
+    # draw the blue border frame
     def draw_clipping_borders(self) -> None:
         border = CLIPPING_BORDER
         x_min = border
@@ -297,7 +304,10 @@ class MainWindow(QMainWindow):
             self.draw_line_segment((p1, p2), QtCore.Qt.blue, _border=True)
 
 
-    # --- Wireframe Structures ---
+    # --- Drawing ---
+
+    def prepare_coordinates(self, wireframe: WireframeStructure) -> None:
+        pass
 
     def draw_line_segment(self, points: tuple, wireframe_color:Any, _border:bool=False) -> None:
         p1, p2 = points
@@ -456,6 +466,12 @@ class MainWindow(QMainWindow):
         self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
         self.redraw_wireframes()
 
+    # --- Clipping ---
+
+    def set_clipping_method(self, type: ClippingMethod) -> None:
+        self.clipping_method = type
+        self.console_log(f"Setting clipping method to: {type.name}")
+        self.redraw_wireframes()
 
     # --- Buttons ---
 
@@ -473,6 +489,11 @@ class MainWindow(QMainWindow):
         # Wavefront obj files
         self.load_btn.clicked.connect(self.load_obj)
         self.save_btn.clicked.connect(self.save_obj)
+
+        # Clipping buttons
+        self.radio_btn_clipping0.clicked.connect(lambda: self.set_clipping_method(ClippingMethod.NONE))
+        self.radio_btn_clipping1.clicked.connect(lambda: self.set_clipping_method(ClippingMethod.COHEN_SUTHERLAND))
+        self.radio_btn_clipping2.clicked.connect(lambda: self.set_clipping_method(ClippingMethod.LIANG_BARKSY))
 
         # Extra buttons
         self.clear_log_btn.clicked.connect(self.log_browser.clear)
