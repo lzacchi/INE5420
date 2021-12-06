@@ -11,7 +11,7 @@ from utils.wireframe_structure import WireframeStructure
 from utils.math_utils import normalize_window
 from utils.wavefront_obj import ObjReader, ObjWriter
 from utils.obj_header import ObjHeader
-from utils.clipping.clipping import ClippingMethod
+from utils.clipping.clipping import ClippingMethod, apply_clipping
 
 
 # Constants
@@ -306,8 +306,23 @@ class MainWindow(QMainWindow):
 
     # --- Drawing ---
 
-    def prepare_coordinates(self, wireframe: WireframeStructure) -> None:
-        pass
+    def prepare_clipping(self, wireframe: WireframeStructure) -> tuple[bool, list]:
+        clipping = True
+
+        if self.clipping_method == ClippingMethod.NONE:
+            clipping = False
+
+        wireframe.transform()
+        coordinates = [wireframe.transformed_coordinates]
+
+        if clipping:
+            visibility, coordinates = apply_clipping(wireframe)
+        else:
+            visibility = True
+
+        return visibility, coordinates
+
+
 
     def draw_line_segment(self, points: tuple, wireframe_color:Any, _border:bool=False) -> None:
         p1, p2 = points
@@ -327,23 +342,24 @@ class MainWindow(QMainWindow):
         if not refresh:
             self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
-        for point in range(wireframe.vertices):
-            wireframe.transform()
-            x1, y1 = wireframe.transformed_coordinates[point]
+        visibilty, coordinates = self.prepare_clipping(wireframe)
 
-            # viewport transformation
-            x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
-            y1_vp = y_viewport(y1, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
+        if visibilty:
+            for coordinate in coordinates:
+                for point in range(len(coordinate)):
+                    x1, y1 = coordinate[point]
+                    # viewport transformation
+                    x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
+                    y1_vp = y_viewport(y1, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
 
-            x2, y2 = wireframe.transformed_coordinates[(point + 1) % wireframe.vertices]
+                    x2, y2 = wireframe.transformed_coordinates[(point + 1) % len(coordinate)]
 
-            x2_vp = x_viewport(x2, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
-            y2_vp = y_viewport(y2, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
+                    x2_vp = x_viewport(x2, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
+                    y2_vp = y_viewport(y2, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
 
-            p1 = (x1_vp, y1_vp)
-            p2 = (x2_vp, y2_vp)
-
-            self.draw_line_segment((p1, p2), wireframe.color)
+                    p1 = (x1_vp, y1_vp)
+                    p2 = (x2_vp, y2_vp)
+                self.draw_line_segment((p1, p2), wireframe.color)
 
 
     def redraw_wireframes(self) -> None:
