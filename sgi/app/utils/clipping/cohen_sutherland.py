@@ -65,19 +65,20 @@ def cohen_sutherland(line:tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple
         if rc_outer & rc_left == rc_left:
             x = min_value
             y = y1 + (y2 - y1) * (min_value - x1) / (x2 - x1)
+            break
 
         if rc_outer & rc_right == rc_right:
             x = max_value
             y = y1 + (y1 - y2) * (max_value - x1) / (x2 - x1)
-
+            break
         if rc_outer & rc_up == rc_up:
             x = x1 + (x2 - x1) * (max_value - y1) / (y2 - y1)
             y = max_value
-
+            break
         if rc_outer & rc_down == rc_down:
             x = x1 + (x2 - x1) * (min_value - y1) / (y2 - y1)
             y = min_value
-
+            break
         if rc_outer == p1_rc:
             x1 = x
             y1 = y

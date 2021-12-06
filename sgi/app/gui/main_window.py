@@ -359,7 +359,7 @@ class MainWindow(QMainWindow):
 
                     p1 = (x1_vp, y1_vp)
                     p2 = (x2_vp, y2_vp)
-                self.draw_line_segment((p1, p2), wireframe.color)
+                    self.draw_line_segment((p1, p2), wireframe.color)
 
 
     def redraw_wireframes(self) -> None:
