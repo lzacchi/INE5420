@@ -24,6 +24,9 @@ class WireframeStructure():
         self.coordinates = coordinates
         self.vertices = len(self.coordinates)
 
+        self.visibility = True
+        self.fill = False
+
         self.homogeneous_coordinates = get_homogeneous_coordinates(self.coordinates)
         self.center: Tuple[float, float] = (0.0, 0.0)
 

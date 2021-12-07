@@ -104,7 +104,6 @@ class NewWireframeWindow(QtWidgets.QDialog):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
             self.wireframe_color = color
-        print("set color")
 
     def add_point(self) -> None:
         text_x = self.new_form_x_text.toPlainText()

@@ -10,8 +10,7 @@ class ClippingMethod(Enum):
     LIANG_BARKSY = auto()
 
 
-def apply_clipping(wireframe: WireframeStructure) -> tuple[bool, list]:
-    print(wireframe.vertices)
+def apply_clipping(wireframe: WireframeStructure, method: ClippingMethod) -> tuple[bool, list]:
     if wireframe.vertices == 1:
         coordinates = np.array(wireframe.transformed_coordinates[0])
 
@@ -26,10 +25,8 @@ def apply_clipping(wireframe: WireframeStructure) -> tuple[bool, list]:
         '''Clip line'''
         p1, p2 = wireframe.transformed_coordinates
 
-        visibility, clipped_coordinates = cohen_sutherland((p1, p2))
-
-        print(f'visibility = {visibility}')
-        print(f'coordinates= {clipped_coordinates}')
+        if method == ClippingMethod.COHEN_SUTHERLAND:
+            visibility, clipped_coordinates = cohen_sutherland((p1, p2))
 
         return visibility, [clipped_coordinates]
 

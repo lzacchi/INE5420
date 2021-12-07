@@ -19,7 +19,7 @@ X_MIN = 0
 Y_MIN = 0
 X_MAX = 705
 Y_MAX = 460
-CLIPPING_BORDER = 10
+CLIPPING_BORDER = 15
 SCALE_STEP = 0.1
 PAN_STEP = 10
 ROTATION_STEP = 0.1
@@ -211,6 +211,7 @@ class MainWindow(QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
         self.draw_clipping_borders()
         self.connect_signals()
 
@@ -306,7 +307,7 @@ class MainWindow(QMainWindow):
 
     # --- Drawing ---
 
-    def prepare_clipping(self, wireframe: WireframeStructure) -> tuple[bool, list]:
+    def set_clipping_params(self, wireframe: WireframeStructure) -> tuple[bool, list]:
         clipping = True
 
         if self.clipping_method == ClippingMethod.NONE:
@@ -316,7 +317,7 @@ class MainWindow(QMainWindow):
         coordinates = [wireframe.transformed_coordinates]
 
         if clipping:
-            visibility, coordinates = apply_clipping(wireframe)
+            visibility, coordinates = apply_clipping(wireframe, self.clipping_method)
         else:
             visibility = True
 
@@ -342,7 +343,7 @@ class MainWindow(QMainWindow):
         if not refresh:
             self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
-        visibilty, coordinates = self.prepare_clipping(wireframe)
+        visibilty, coordinates = self.set_clipping_params(wireframe)
 
         if visibilty:
             for coordinate in coordinates:
