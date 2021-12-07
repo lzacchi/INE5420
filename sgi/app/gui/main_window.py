@@ -19,10 +19,10 @@ X_MIN = 0
 Y_MIN = 0
 X_MAX = 705
 Y_MAX = 460
-CLIPPING_BORDER = 15
 SCALE_STEP = 0.1
-PAN_STEP = 10
+PAN_STEP = 20
 ROTATION_STEP = 0.1
+CLIPPING_BORDER = 15  # Used elsewhere, change with ctrl + shift + H
 
 class MainWindow(QMainWindow):
     def __init__(self, parent:QMainWindow = None) -> None:
@@ -308,15 +308,10 @@ class MainWindow(QMainWindow):
     # --- Drawing ---
 
     def set_clipping_params(self, wireframe: WireframeStructure) -> tuple[bool, list]:
-        clipping = True
-
-        if self.clipping_method == ClippingMethod.NONE:
-            clipping = False
-
         wireframe.transform()
         coordinates = [wireframe.transformed_coordinates]
 
-        if clipping:
+        if self.clipping_method is not ClippingMethod.NONE:
             visibility, coordinates = apply_clipping(wireframe, self.clipping_method)
         else:
             visibility = True

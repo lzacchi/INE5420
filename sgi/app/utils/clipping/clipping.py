@@ -2,6 +2,7 @@ import numpy as np
 from enum import Enum, auto
 from utils.wireframe_structure import WireframeStructure
 from utils.clipping.cohen_sutherland import cohen_sutherland
+from utils.clipping.liang_barsky import liang_barsky
 
 
 class ClippingMethod(Enum):
@@ -12,6 +13,7 @@ class ClippingMethod(Enum):
 
 def apply_clipping(wireframe: WireframeStructure, method: ClippingMethod) -> tuple[bool, list]:
     if wireframe.vertices == 1:
+        '''Clip point'''
         coordinates = np.array(wireframe.transformed_coordinates[0])
 
         '''Test if point is visible'''
@@ -27,7 +29,15 @@ def apply_clipping(wireframe: WireframeStructure, method: ClippingMethod) -> tup
 
         if method == ClippingMethod.COHEN_SUTHERLAND:
             visibility, clipped_coordinates = cohen_sutherland((p1, p2))
+        else:
+            visibility, clipped_coordinates = liang_barsky((p1, p2))
+
+        print(visibility)
+        print(clipped_coordinates)
 
         return visibility, [clipped_coordinates]
+    # else:
 
+
+    # TODO: Clip polygon
     return False, []
