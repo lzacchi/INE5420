@@ -157,11 +157,11 @@ class MainWindow(QMainWindow):
         self.radio_btn_clipping2.setGeometry(QtCore.QRect(30, 600, 106, 26))
         self.radio_btn_clipping2.setObjectName("radio_btn_clipping2")
 
+        self.radio_btn_clipping0.setChecked(True)
+
         viewport_area = QtGui.QPixmap(705,460)
         viewport_area.fill(QtGui.QColor("black"))
-
         self.viewport_frame.setPixmap(viewport_area)
-
         self.painter = QtGui.QPainter(self.viewport_frame.pixmap())
 
         self.viewport_line = QtWidgets.QFrame(self.centralwidget)

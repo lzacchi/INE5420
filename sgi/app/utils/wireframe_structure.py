@@ -23,6 +23,7 @@ class WireframeStructure():
     def __init__(self, coordinates: list, struct_index: int, color: QColor, normalization_params:Coordinates , window_transformations: list) -> None:
         self.coordinates = coordinates
         self.vertices = len(self.coordinates)
+        self.name = "wireframe"
 
         self.visibility = True
         self.fill = False
