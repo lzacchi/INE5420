@@ -11,6 +11,7 @@ def region_code(value:int, min_value:int, max_value:int, extremities:tuple[int, 
     return 0
 
 
+# returns visible boolean and result
 def cohen_sutherland(line:tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple]]:
     '''
     region code (rc) is 4 bits

@@ -32,9 +32,6 @@ def apply_clipping(wireframe: WireframeStructure, method: ClippingMethod) -> tup
         else:
             visibility, clipped_coordinates = liang_barsky((p1, p2))
 
-        print(visibility)
-        print(clipped_coordinates)
-
         return visibility, [clipped_coordinates]
     # else:
 

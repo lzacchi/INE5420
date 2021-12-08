@@ -20,9 +20,10 @@ Y_MIN = 0
 X_MAX = 705
 Y_MAX = 460
 SCALE_STEP = 0.1
-PAN_STEP = 20
+PAN_STEP = 10
 ROTATION_STEP = 0.1
-CLIPPING_BORDER = 15  # Used elsewhere, change with ctrl + shift + H
+DEFAULT_PEN_SIZE = 3
+CLIPPING_BORDER = 20
 
 class MainWindow(QMainWindow):
     def __init__(self, parent:QMainWindow = None) -> None:
@@ -131,7 +132,7 @@ class MainWindow(QMainWindow):
         self.nav_zoom_out_btn.setObjectName("nav_zoom_out_btn")
 
         self.viewport_frame = QtWidgets.QLabel(self.centralwidget)
-        self.viewport_frame.setGeometry(QtCore.QRect(240, 40, 705, 460))
+        self.viewport_frame.setGeometry(QtCore.QRect(240, 40, X_MAX, Y_MAX))
         self.viewport_frame.setText("")
         self.viewport_frame.setObjectName("viewport_frame")
 
@@ -159,7 +160,7 @@ class MainWindow(QMainWindow):
 
         self.radio_btn_clipping0.setChecked(True)
 
-        viewport_area = QtGui.QPixmap(705,460)
+        viewport_area = QtGui.QPixmap(X_MAX,Y_MAX)
         viewport_area.fill(QtGui.QColor("black"))
         self.viewport_frame.setPixmap(viewport_area)
         self.painter = QtGui.QPainter(self.viewport_frame.pixmap())
@@ -173,7 +174,7 @@ class MainWindow(QMainWindow):
         self.label_3.setGeometry(QtCore.QRect(240, 10, 71, 21))
         self.label_3.setObjectName("label_3")
         self.log_browser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.log_browser.setGeometry(QtCore.QRect(240, 510, 705, 140))
+        self.log_browser.setGeometry(QtCore.QRect(240, 510, X_MAX, 140))
         self.log_browser.setObjectName("log_browser")
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setGeometry(QtCore.QRect(10, 400, 211, 16))
@@ -325,10 +326,9 @@ class MainWindow(QMainWindow):
         p1x, p1y = p1
         p2x, p2y = p2
 
-        self.painter.setPen(wireframe_color)
-
+        self.painter.setPen(QtGui.QPen(wireframe_color, DEFAULT_PEN_SIZE))
         if _border:
-            self.painter.setPen(QtGui.QPen(wireframe_color, 2))
+            self.painter.setPen(QtGui.QPen(wireframe_color, 4))
 
         self.painter.drawLine(p1x, p1y, p2x, p2y)
         self.viewport_frame.update()
@@ -338,10 +338,10 @@ class MainWindow(QMainWindow):
         if not refresh:
             self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
-        visibilty, coordinates = self.set_clipping_params(wireframe)
+        visibility, wireframe_coordinates = self.set_clipping_params(wireframe)
 
-        if visibilty:
-            for coordinate in coordinates:
+        if visibility:
+            for coordinate in wireframe_coordinates:
                 for point in range(len(coordinate)):
                     x1, y1 = coordinate[point]
                     # viewport transformation
@@ -419,11 +419,15 @@ class MainWindow(QMainWindow):
     # --- Obj handling ---
 
     def load_obj(self) -> None:
-        filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0]
-        # filename = "./sgi/resources/obj/house.obj" # DEBUG
-        # filename = "./resources/obj/house.obj" # DEBUG
-        self.console_log(f"Loading file: {filename}")
+        # filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0] # normal
+        filename = "./sgi/resources/obj/reta.obj" # DEBUG vscode
+        # filename = "./resources/obj/reta.obj" # DEBUG ter
 
+        if filename== "":
+            self.console_log("No file selected")
+            return
+
+        self.console_log(f"Loading file: {filename}")
         objreader = ObjReader(filename, self.total_wireframes, self.window_coordinates, self.window_normalization)
         new_wf = objreader.wireframes
         for w in new_wf:

@@ -1,3 +1,5 @@
+
+# returns visible boolean and result
 def liang_barsky(line:tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple]]:
     min_value = -1
     max_value = 1
