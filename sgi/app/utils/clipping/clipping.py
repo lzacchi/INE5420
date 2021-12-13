@@ -11,20 +11,25 @@ class ClippingMethod(Enum):
     LIANG_BARKSY = auto()
 
 
-def apply_clipping(wireframe: WireframeStructure, method: ClippingMethod) -> tuple[bool, list]:
+WINDOW_MAX = 1
+WINDOW_MIN = -1
+
+
+def apply_clipping(
+    wireframe: WireframeStructure, method: ClippingMethod
+) -> tuple[bool, list]:
     if wireframe.vertices == 1:
-        '''Clip point'''
+        """Clip point"""
         coordinates = np.array(wireframe.transformed_coordinates[0])
 
-        '''Test if point is visible'''
-        if np.any((coordinates < -1) | (coordinates > 1)):
+        """Test if point is visible"""
+        if np.any((coordinates < WINDOW_MIN) | (coordinates > WINDOW_MAX)):
             return False, []
         else:
             return True, [[coordinates]]
 
-
     if wireframe.vertices == 2:
-        '''Clip line'''
+        """Clip line"""
         p1, p2 = wireframe.transformed_coordinates
 
         if method == ClippingMethod.COHEN_SUTHERLAND:
@@ -34,7 +39,6 @@ def apply_clipping(wireframe: WireframeStructure, method: ClippingMethod) -> tup
 
         return visibility, [clipped_coordinates]
     # else:
-
 
     # TODO: Clip polygon
     return False, []

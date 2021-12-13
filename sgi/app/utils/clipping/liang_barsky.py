@@ -1,6 +1,5 @@
-
 # returns visible boolean and result
-def liang_barsky(line:tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple]]:
+def liang_barsky(line: tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple]]:
     min_value = -1
     max_value = 1
 
@@ -9,16 +8,15 @@ def liang_barsky(line:tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple]]:
     x1, y1 = point1
     x2, y2 = point2
 
-    p1 = -(x2 - x1)
-    p2 = -p1
-    p3 = -(y2 - y1)
-    p4 = -p3
+    p1 = -(x2 - x1)  # -Δx
+    p2 = -p1  #  Δx
+    p3 = -(y2 - y1)  # -Δy
+    p4 = -p3  #  Δy
 
     q1 = x1 - min_value
     q2 = max_value - x1
     q3 = y1 - min_value
     q4 = max_value - y1
-
 
     pk = list(zip([p1, p2, p3, p4], [q1, q2, q3, q4]))
 

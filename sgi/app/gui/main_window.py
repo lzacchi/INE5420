@@ -213,7 +213,7 @@ class MainWindow(QMainWindow):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.draw_clipping_borders()
+        self.draw_clip_window()
         self.connect_signals()
 
 
@@ -289,7 +289,7 @@ class MainWindow(QMainWindow):
 
 
     # draw the blue border frame
-    def draw_clipping_borders(self) -> None:
+    def draw_clip_window(self) -> None:
         border = CLIPPING_BORDER
         x_min = border
         y_min = border
@@ -323,14 +323,16 @@ class MainWindow(QMainWindow):
 
     def draw_line_segment(self, points: tuple, wireframe_color:Any, _border:bool=False) -> None:
         p1, p2 = points
-        p1x, p1y = p1
-        p2x, p2y = p2
+        x1, y1 = p1
+        x2, y2 = p2
+        
+        line = QtCore.QLineF(x1, y1, x2, y2)
 
         self.painter.setPen(QtGui.QPen(wireframe_color, DEFAULT_PEN_SIZE))
         if _border:
             self.painter.setPen(QtGui.QPen(wireframe_color, 4))
 
-        self.painter.drawLine(p1x, p1y, p2x, p2y)
+        self.painter.drawLine(line)
         self.viewport_frame.update()
 
 
@@ -344,17 +346,18 @@ class MainWindow(QMainWindow):
             for coordinate in wireframe_coordinates:
                 for point in range(len(coordinate)):
                     x1, y1 = coordinate[point]
+                    x2, y2 = coordinate[(point + 1) % len(coordinate)]
+
                     # viewport transformation
                     x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
                     y1_vp = y_viewport(y1, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
-
-                    x2, y2 = wireframe.transformed_coordinates[(point + 1) % len(coordinate)]
 
                     x2_vp = x_viewport(x2, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
                     y2_vp = y_viewport(y2, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
 
                     p1 = (x1_vp, y1_vp)
                     p2 = (x2_vp, y2_vp)
+
                     self.draw_line_segment((p1, p2), wireframe.color)
 
 
@@ -370,7 +373,7 @@ class MainWindow(QMainWindow):
             w.window_height = window_height
             w.window_transformations = self.window_normalization
             self.draw_wireframe(w, True)
-        self.draw_clipping_borders()
+        self.draw_clip_window()
 
 
     def delete_wireframe(self, _log:bool=True) -> None:
@@ -397,7 +400,7 @@ class MainWindow(QMainWindow):
             self.console_log("Viewport cleared")
         self.viewport_frame.pixmap().fill(QtGui.QColor("black"))
         self.viewport_frame.update()
-        self.draw_clipping_borders()
+        self.draw_clip_window()
 
     def refresh_canvas(self) -> None:
         self.denormalization_matrix()
@@ -419,8 +422,7 @@ class MainWindow(QMainWindow):
     # --- Obj handling ---
 
     def load_obj(self) -> None:
-        # filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0] # normal
-        filename = "./sgi/resources/obj/reta.obj" # DEBUG vscode
+        filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0] # normal
         # filename = "./resources/obj/reta.obj" # DEBUG ter
 
         if filename== "":
@@ -435,7 +437,7 @@ class MainWindow(QMainWindow):
             self.draw_wireframe(w)
             self.display_file_list.insertItem(self.total_wireframes, w.name)
             self.total_wireframes+=1
-        self.draw_clipping_borders()
+        self.draw_clip_window()
 
     def save_obj(self) -> None:
         filename, yes = QInputDialog.getText(self, "Text Input Dialog", "Name:")

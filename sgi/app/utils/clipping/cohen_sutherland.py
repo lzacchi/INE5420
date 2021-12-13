@@ -58,6 +58,7 @@ def cohen_sutherland(line:tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple
             return True, ((x1,y1),(x2,y2))
 
         x, y = 0, 0
+        m = (y2 - y1)/(x2 - x1)  # angular coefficient
 
         '''Line is partially outside the window'''
         rc_outer = max(p1_rc, p2_rc)
@@ -65,18 +66,18 @@ def cohen_sutherland(line:tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple
         '''Test which region contains the outer point'''
         if rc_outer & rc_left == rc_left:
             x = min_value
-            y = y1 + (y2 - y1) * (min_value - x1) / (x2 - x1)
+            y = m * (min_value - x1) + y1
 
         if rc_outer & rc_right == rc_right:
             x = max_value
-            y = y1 + (y2 - y1) * (max_value - x1) / (x2 - x1)
+            y = m * (max_value - x1) + y1
 
         if rc_outer & rc_up == rc_up:
-            x = x1 + (x2 - x1) * (max_value - y1) / (y2 - y1)
+            x = x1 + 1/m * (max_value - y1) 
             y = max_value
 
         if rc_outer & rc_down == rc_down:
-            x = x1 + (x2 - x1) * (min_value - y1) / (y2 - y1)
+            x = x1 + 1/m * (min_value - y1)
             y = min_value
 
         if rc_outer == p1_rc:
