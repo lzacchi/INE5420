@@ -22,11 +22,12 @@ Y_MAX = 460
 SCALE_STEP = 0.1
 PAN_STEP = 10
 ROTATION_STEP = 0.1
-DEFAULT_PEN_SIZE = 3
+DEFAULT_PEN_SIZE = 2
 CLIPPING_BORDER = 20
 
+
 class MainWindow(QMainWindow):
-    def __init__(self, parent:QMainWindow = None) -> None:
+    def __init__(self, parent: QMainWindow = None) -> None:
         super().__init__(parent)
 
         self.display_file: list = []
@@ -45,29 +46,28 @@ class MainWindow(QMainWindow):
         self.transformation_window = TransformationWindow(self)
 
         self.window_coordinates = Coordinates(
-                                    -X_MAX/2,
-                                    -Y_MAX/2,
-                                    X_MAX/2,
-                                    Y_MAX/2,
-                                    ROTATION_STEP
-                                  )
+            -X_MAX/2,
+            -Y_MAX/2,
+            X_MAX/2,
+            Y_MAX/2,
+            ROTATION_STEP
+        )
 
         self.viewport_coordinates = Coordinates(
-                                      X_MIN + CLIPPING_BORDER,
-                                      Y_MIN + CLIPPING_BORDER,
-                                      X_MAX - CLIPPING_BORDER,
-                                      Y_MAX - CLIPPING_BORDER,
-                                      SCALE_STEP
-                                    )
+            X_MIN + CLIPPING_BORDER,
+            Y_MIN + CLIPPING_BORDER,
+            X_MAX - CLIPPING_BORDER,
+            Y_MAX - CLIPPING_BORDER,
+            SCALE_STEP
+        )
 
         self.normalization_matrix()
         self.denormalization_matrix()
         self.setupUi(self)
 
-
     # --- Ui stuff ---
 
-    def setupUi(self, MainWindow:QMainWindow) -> None:
+    def setupUi(self, MainWindow: QMainWindow) -> None:
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(955, 675)
 
@@ -160,7 +160,7 @@ class MainWindow(QMainWindow):
 
         self.radio_btn_clipping0.setChecked(True)
 
-        viewport_area = QtGui.QPixmap(X_MAX,Y_MAX)
+        viewport_area = QtGui.QPixmap(X_MAX, Y_MAX)
         viewport_area.fill(QtGui.QColor("black"))
         self.viewport_frame.setPixmap(viewport_area)
         self.painter = QtGui.QPainter(self.viewport_frame.pixmap())
@@ -213,14 +213,14 @@ class MainWindow(QMainWindow):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.draw_clip_window()
+        self.draw_clipping_window()
         self.connect_signals()
 
-
-    def retranslateUi(self, MainWindow:Any) -> None:
+    def retranslateUi(self, MainWindow: Any) -> None:
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "INE5420 SGI"))
-        self.label_display_file.setText(_translate("MainWindow", "Display File"))
+        self.label_display_file.setText(
+            _translate("MainWindow", "Display File"))
         self.new_btn.setText(_translate("MainWindow", "New"))
         self.delete_btn.setText(_translate("MainWindow", "Delete"))
         self.clear_btn.setText(_translate("MainWindow", "Clear"))
@@ -243,12 +243,16 @@ class MainWindow(QMainWindow):
         self.rotation_x_btn.setText(_translate("MainWindow", "X"))
         # self.rotation_y_btn.setText(_translate("MainWindow", "Y"))
         # self.rotation_z_btn.setText(_translate("MainWindow", "Z"))
-        self.label_rotation_val.setText(_translate("MainWindow", "Value (Degrees):"))
+        self.label_rotation_val.setText(
+            _translate("MainWindow", "Value (Degrees):"))
 
         self.label_clipping.setText(_translate("MainWindow", "Clipping"))
-        self.radio_btn_clipping1.setText(_translate("MainWindow", "Cohen Sutherland"))
-        self.radio_btn_clipping2.setText(_translate("MainWindow", "Liang-Barsky"))
-        self.radio_btn_clipping0.setText(_translate("MainWindow", "Don't clip"))
+        self.radio_btn_clipping1.setText(
+            _translate("MainWindow", "Cohen Sutherland"))
+        self.radio_btn_clipping2.setText(
+            _translate("MainWindow", "Liang-Barsky"))
+        self.radio_btn_clipping0.setText(
+            _translate("MainWindow", "Don't clip"))
 
         self.clear_log_btn.setText(_translate("MainWindow", "Clear"))
         self.transform_btn.setText(_translate("MainWindow", "Transform"))
@@ -256,7 +260,8 @@ class MainWindow(QMainWindow):
     # --- Utils ---
 
     def console_log(self, message: str) -> None:
-        self.log_browser.append(f"[{datetime.now().strftime('%H:%M:%S')}]: " + message)
+        self.log_browser.append(
+            f"[{datetime.now().strftime('%H:%M:%S')}]: " + message)
 
     def select_current_object(self) -> WireframeStructure:
         current_row = self.display_file_list.currentRow()
@@ -267,7 +272,6 @@ class MainWindow(QMainWindow):
     def open_new_wireframe_window(self) -> None:
         self.new_wireframe.open_new()
 
-
     def open_transformation_window(self) -> None:
         current_object = self.select_current_object()
         if current_object is None:
@@ -275,27 +279,28 @@ class MainWindow(QMainWindow):
             return
         self.transformation_window.open_new(current_object)
 
-
     def normalization_matrix(self) -> None:
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
-        self.window_normalization = normalize_window(self.x_shift_accumulator, self.y_shift_accumulator, window_width, window_height, self.rotation_accumulator)
-
+        self.window_normalization = normalize_window(
+            self.x_shift_accumulator, self.y_shift_accumulator, window_width, window_height, self.rotation_accumulator)
 
     def denormalization_matrix(self) -> None:
         window_width = self.window_coordinates.max_x - self.window_coordinates.min_x
         window_height = self.window_coordinates.max_y - self.window_coordinates.min_y
-        self.window_denormalization = normalize_window(-self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, -self.rotation_accumulator)
-
+        self.window_denormalization = normalize_window(
+            -self.x_shift_accumulator, -self.y_shift_accumulator, 4/window_width, 4/window_height, -self.rotation_accumulator)
 
     # draw the blue border frame
-    def draw_clip_window(self) -> None:
+
+    def draw_clipping_window(self) -> None:
         border = CLIPPING_BORDER
         x_min = border
         y_min = border
         x_max = self.viewport_coordinates.max_x
         y_max = self.viewport_coordinates.max_y
-        bordered_window = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
+        bordered_window = [(x_min, y_min), (x_max, y_min),
+                           (x_max, y_max), (x_min, y_max)]
 
         border_points = len(bordered_window)
 
@@ -305,7 +310,6 @@ class MainWindow(QMainWindow):
 
             self.draw_line_segment((p1, p2), QtCore.Qt.blue, _border=True)
 
-
     # --- Drawing ---
 
     def set_clipping_params(self, wireframe: WireframeStructure) -> tuple[bool, list]:
@@ -313,19 +317,18 @@ class MainWindow(QMainWindow):
         coordinates = [wireframe.transformed_coordinates]
 
         if self.clipping_method is not ClippingMethod.NONE:
-            visibility, coordinates = apply_clipping(wireframe, self.clipping_method)
+            visibility, coordinates = apply_clipping(
+                wireframe, self.clipping_method)
         else:
             visibility = True
 
         return visibility, coordinates
 
-
-
-    def draw_line_segment(self, points: tuple, wireframe_color:Any, _border:bool=False) -> None:
+    def draw_line_segment(self, points: tuple, wireframe_color: Any, _border: bool = False) -> None:
         p1, p2 = points
         x1, y1 = p1
         x2, y2 = p2
-        
+
         line = QtCore.QLineF(x1, y1, x2, y2)
 
         self.painter.setPen(QtGui.QPen(wireframe_color, DEFAULT_PEN_SIZE))
@@ -335,12 +338,14 @@ class MainWindow(QMainWindow):
         self.painter.drawLine(line)
         self.viewport_frame.update()
 
-
-    def draw_wireframe(self, wireframe: WireframeStructure, refresh:bool = False) -> None:
+    def draw_wireframe(self, wireframe: WireframeStructure, refresh: bool = False) -> None:
         if not refresh:
-            self.console_log(f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
+            self.console_log(
+                f"Drawing {wireframe.struct_name}: {[point for point in wireframe.coordinates]}")
 
         visibility, wireframe_coordinates = self.set_clipping_params(wireframe)
+
+        filling_coordinates = []
 
         if visibility:
             for coordinate in wireframe_coordinates:
@@ -349,17 +354,33 @@ class MainWindow(QMainWindow):
                     x2, y2 = coordinate[(point + 1) % len(coordinate)]
 
                     # viewport transformation
-                    x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
-                    y1_vp = y_viewport(y1, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
+                    x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x,
+                                       self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
+                    y1_vp = y_viewport(y1, self.window_coordinates.min_y, self.window_coordinates.max_y,
+                                       self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
 
-                    x2_vp = x_viewport(x2, self.window_coordinates.min_x, self.window_coordinates.max_x, self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
-                    y2_vp = y_viewport(y2, self.window_coordinates.min_y, self.window_coordinates.max_y, self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
+                    x2_vp = x_viewport(x2, self.window_coordinates.min_x, self.window_coordinates.max_x,
+                                       self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
+                    y2_vp = y_viewport(y2, self.window_coordinates.min_y, self.window_coordinates.max_y,
+                                       self.viewport_coordinates.min_y, self.viewport_coordinates.max_y)
 
                     p1 = (x1_vp, y1_vp)
                     p2 = (x2_vp, y2_vp)
 
                     self.draw_line_segment((p1, p2), wireframe.color)
 
+                    if wireframe.fill:
+                        filling_coordinates.append((x1_vp, y1_vp))
+
+                if filling_coordinates:
+                    fill_polygon = QtGui.QPolygonF()
+                    for coordinate in filling_coordinates:
+                        point = QtCore.QPointF(coordinate[0], coordinate[1])
+                        fill_polygon.append(point)
+                    filling_path = QtGui.QPainterPath()
+                    filling_path.addPolygon(fill_polygon)
+                    self.painter.setBrush(wireframe.color)
+                    self.painter.drawPath(filling_path)
 
     def redraw_wireframes(self) -> None:
         self.clear_viewport()
@@ -373,34 +394,35 @@ class MainWindow(QMainWindow):
             w.window_height = window_height
             w.window_transformations = self.window_normalization
             self.draw_wireframe(w, True)
-        self.draw_clip_window()
+        self.draw_clipping_window()
 
-
-    def delete_wireframe(self, _log:bool=True) -> None:
+    def delete_wireframe(self, _log: bool = True) -> None:
         try:
             self.display_file.pop()
         except IndexError:
             self.console_log("There are no wireframe structures to delete.")
 
         if _log:
-            self.console_log(f"Deleting structure: {self.display_file_list.currentRow()}")
+            self.console_log(
+                f"Deleting structure: {self.display_file_list.currentRow()}")
 
         self.display_file_list.takeItem(self.display_file_list.currentRow())
 
     # --- Resetting ---
 
     # refresh entire canvas
-    def clear_viewport(self, _delete:bool=False) -> None:
+    def clear_viewport(self, _delete: bool = False) -> None:
         if _delete:
             wireframes = len(self.display_file)
             for w in range(wireframes):
                 self.delete_wireframe(_log=False)
             self.display_file_list.clear()
-            self.console_log(f"Deleting {wireframes} wireframes from Display File")
+            self.console_log(
+                f"Deleting {wireframes} wireframes from Display File")
             self.console_log("Viewport cleared")
         self.viewport_frame.pixmap().fill(QtGui.QColor("black"))
         self.viewport_frame.update()
-        self.draw_clip_window()
+        self.draw_clipping_window()
 
     def refresh_canvas(self) -> None:
         self.denormalization_matrix()
@@ -422,34 +444,37 @@ class MainWindow(QMainWindow):
     # --- Obj handling ---
 
     def load_obj(self) -> None:
-        filename = QFileDialog.getOpenFileName(self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0] # normal
+        filename = QFileDialog.getOpenFileName(
+            self, "Open wavefront obj file", "./resources/obj", "Obj files (*.obj)")[0]  # normal
         # filename = "./resources/obj/reta.obj" # DEBUG ter
 
-        if filename== "":
+        if filename == "":
             self.console_log("No file selected")
             return
 
         self.console_log(f"Loading file: {filename}")
-        objreader = ObjReader(filename, self.total_wireframes, self.window_coordinates, self.window_normalization)
+        objreader = ObjReader(filename, self.total_wireframes,
+                              self.window_coordinates, self.window_normalization)
         new_wf = objreader.wireframes
         for w in new_wf:
             self.display_file.append(w)
             self.draw_wireframe(w)
             self.display_file_list.insertItem(self.total_wireframes, w.name)
-            self.total_wireframes+=1
-        self.draw_clip_window()
+            self.total_wireframes += 1
+        self.draw_clipping_window()
 
     def save_obj(self) -> None:
-        filename, yes = QInputDialog.getText(self, "Text Input Dialog", "Name:")
+        filename, yes = QInputDialog.getText(
+            self, "Text Input Dialog", "Name:")
         if yes:
-            objwriter = ObjWriter(self.display_file, filename, self.window_denormalization)
+            objwriter = ObjWriter(
+                self.display_file, filename, self.window_denormalization)
             objwriter.write_obj()
             self.console_log(f"Saved scene as {filename}")
 
-
     # --- Navigation/transformation
 
-    def navigation(self, _up:bool = False, _left:bool = False, _down:bool = False, _right:bool = False) -> None:
+    def navigation(self, _up: bool = False, _left: bool = False, _down: bool = False, _right: bool = False) -> None:
         if _up:
             self.y_shift_accumulator -= self.pan_step
         if _left:
@@ -461,15 +486,13 @@ class MainWindow(QMainWindow):
 
         self.redraw_wireframes()
 
-
     def scale_canvas(self, step: float) -> None:
         self.scale_accumulator += step
         scale_factor = 1 + self.scale_accumulator
         self.window_coordinates.max_x = X_MAX * scale_factor
         self.window_coordinates.max_y = Y_MAX * scale_factor
 
-
-    def zoom(self, _in:bool = False, _out:bool = False) -> None:
+    def zoom(self, _in: bool = False, _out: bool = False) -> None:
         if _in:
             self.scale_canvas(-SCALE_STEP)
 
@@ -479,9 +502,11 @@ class MainWindow(QMainWindow):
 
     def rotation(self) -> None:
         rotation_amount = self.rotation_val_textEdit.toPlainText()
-        self.rotation_accumulator += (0.0 if rotation_amount == '' else float(rotation_amount))%360
+        self.rotation_accumulator += (0.0 if rotation_amount ==
+                                      '' else float(rotation_amount)) % 360
 
-        self.console_log(f"Rotating window by {self.rotation_accumulator}º on the x axis.")
+        self.console_log(
+            f"Rotating window by {self.rotation_accumulator}º on the x axis.")
         self.redraw_wireframes()
 
     # --- Clipping ---
@@ -500,7 +525,8 @@ class MainWindow(QMainWindow):
 
         # Display File/ Viewport Buttons
         self.redraw_btn.clicked.connect(self.redraw_wireframes)
-        self.clear_btn.clicked.connect(lambda: self.clear_viewport(_delete=True)) # TODO: clear all wireframes from list
+        self.clear_btn.clicked.connect(lambda: self.clear_viewport(
+            _delete=True))  # TODO: clear all wireframes from list
         self.delete_btn.clicked.connect(self.delete_wireframe)
         self.reset_btn.clicked.connect(self.refresh_canvas)
 
@@ -509,9 +535,12 @@ class MainWindow(QMainWindow):
         self.save_btn.clicked.connect(self.save_obj)
 
         # Clipping buttons
-        self.radio_btn_clipping0.clicked.connect(lambda: self.set_clipping_method(ClippingMethod.NONE))
-        self.radio_btn_clipping1.clicked.connect(lambda: self.set_clipping_method(ClippingMethod.COHEN_SUTHERLAND))
-        self.radio_btn_clipping2.clicked.connect(lambda: self.set_clipping_method(ClippingMethod.LIANG_BARKSY))
+        self.radio_btn_clipping0.clicked.connect(
+            lambda: self.set_clipping_method(ClippingMethod.NONE))
+        self.radio_btn_clipping1.clicked.connect(
+            lambda: self.set_clipping_method(ClippingMethod.COHEN_SUTHERLAND))
+        self.radio_btn_clipping2.clicked.connect(
+            lambda: self.set_clipping_method(ClippingMethod.LIANG_BARKSY))
 
         # Extra buttons
         self.clear_log_btn.clicked.connect(self.log_browser.clear)
@@ -523,6 +552,7 @@ class MainWindow(QMainWindow):
         self.nav_up_btn.clicked.connect(lambda: self.navigation(_up=True))
         self.nav_left_btn.clicked.connect(lambda: self.navigation(_left=True))
         self.nav_down_btn.clicked.connect(lambda: self.navigation(_down=True))
-        self.nav_right_btn.clicked.connect(lambda: self.navigation(_right=True))
+        self.nav_right_btn.clicked.connect(
+            lambda: self.navigation(_right=True))
 
         self.rotation_x_btn.clicked.connect(self.rotation)

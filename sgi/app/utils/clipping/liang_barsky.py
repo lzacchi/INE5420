@@ -1,42 +1,49 @@
 # returns visible boolean and result
 def liang_barsky(line: tuple[tuple, tuple]) -> tuple[bool, tuple[tuple, tuple]]:
+    pt1, pt2 = line
+    x1, y1 = pt1
+    x2, y2 = pt2
+
     min_value = -1
     max_value = 1
 
-    point1, point2 = line
+    delta_x = x2 - x1
+    delta_y = y2 - y1
 
-    x1, y1 = point1
-    x2, y2 = point2
+    p1 = -delta_x
+    p2 = delta_x
+    p3 = -delta_y
+    p4 = delta_y
 
-    p1 = -(x2 - x1)  # -Δx
-    p2 = -p1  #  Δx
-    p3 = -(y2 - y1)  # -Δy
-    p4 = -p3  #  Δy
-
-    q1 = x1 - min_value
-    q2 = max_value - x1
-    q3 = y1 - min_value
-    q4 = max_value - y1
+    q1 = x1 - min_value  # left border
+    q2 = max_value - x1  # right border
+    q3 = y1 - min_value  # bottom border
+    q4 = max_value - y1  # top border
 
     pk = list(zip([p1, p2, p3, p4], [q1, q2, q3, q4]))
 
-    first_check = any([p == 0 and q < 0 for (p, q) in pk])
-    if first_check:
-        return False, ((), ())
+    if any([p == 0 and q < 0 for (p, q) in pk]):
+        '''line is parallel to clip window'''
+        return False, ((x1, y1), (x2, y2))
 
-    r_negative = [(q / p) for (p, q) in pk if p < 0]
-    u1 = max(0, max(r_negative, default=0))
+    r1 = [(q / p) for (p, q) in pk if p < 0]
+    r2 = [(q / p) for (p, q) in pk if p > 0]
 
-    r_positive = [(q / p) for (p, q) in pk if p > 0]
-    u2 = min(1, min(r_positive, default=1))
+    '''aux values for comparing max and min'''
+    r1.append(0)
+    r2.append(1)
 
-    # Completly outside
-    if u1 > u2:
-        return (False, ((None, None), (None, None)))
+    z1 = max(r1)
+    z2 = min(r2)
 
-    new_x1 = x1 + u1 * p2
-    new_y1 = y1 + u1 * p4
-    new_x2 = x1 + u2 * p2
-    new_y2 = y1 + u2 * p4
+    if z1 > z2:
+        '''line is outside cip window'''
+        return False, ((x1, y1), (x2, y2))
 
-    return (True, ((new_x1, new_y1), (new_x2, new_y2)))
+    clip_x1 = x1 + (z1 * p2)
+    clip_y1 = y1 + (z1 * p4)
+    clip_x2 = x1 + (z2 * p2)
+    clip_y2 = y1 + (z2 * p4)
+
+    clipped_coordinates = ((clip_x1, clip_y1), (clip_x2, clip_y2))
+    return True, clipped_coordinates

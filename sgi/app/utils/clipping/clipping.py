@@ -3,6 +3,7 @@ from enum import Enum, auto
 from utils.wireframe_structure import WireframeStructure
 from utils.clipping.cohen_sutherland import cohen_sutherland
 from utils.clipping.liang_barsky import liang_barsky
+from utils.clipping.sutherland_hodgman import sutherland_hodgman
 
 
 class ClippingMethod(Enum):
@@ -41,4 +42,6 @@ def apply_clipping(
     # else:
 
     # TODO: Clip polygon
-    return False, []
+    visibility, clipped_polygon = sutherland_hodgman(
+        wireframe.transformed_coordinates)
+    return visibility, clipped_polygon
