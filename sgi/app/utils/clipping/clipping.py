@@ -44,4 +44,4 @@ def apply_clipping(
     # TODO: Clip polygon
     visibility, clipped_polygon = sutherland_hodgman(
         wireframe.transformed_coordinates)
-    return visibility, clipped_polygon
+    return visibility, [clipped_polygon]

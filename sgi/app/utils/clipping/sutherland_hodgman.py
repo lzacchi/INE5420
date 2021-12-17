@@ -117,26 +117,21 @@ def sutherland_hodgman(coordinates: list) -> tuple[bool, list]:
                 clipped_coordinates.append(coordinates[c])
             # if C is outside and C+1 is inside,
             # clip C and calculate intersection
-            if edge & c_rc[c] != 0:
+            first_check = edge & c_rc[0]
+            if first_check != 0:
                 x1, y1 = coordinates[c]
                 x2, y2 = coordinates[c_next]
                 m = (y2 - y1) / (x2 - x1)
                 clipped_c = CLIP_EDGE_HELPER[edge](x1, y1, m)
                 clipped_coordinates.append(clipped_c)
-
-            if edge & c_rc[c_next] != 0:
+            second_check = edge & c_rc[1]
+            if second_check != 0:
                 x1, y1 = coordinates[c]
                 x2, y2 = coordinates[c_next]
                 m = (y2 - y1) / (x2 - x1)
                 clipped_c = CLIP_EDGE_HELPER[edge](x2, y2, m)
                 clipped_coordinates.append(clipped_c)
 
-            if any([(edge & code != 0) for code in c_rc]):
-                c_clipped = c if c_rc[0] & edge else c_next
-
-                x1, y1 = coordinates[c]
-                x2, y2 = coordinates[c_next]
-
         coordinates = clipped_coordinates
         clipped_coordinates = []
-    return True, clipped_coordinates
+    return True, coordinates

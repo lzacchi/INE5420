@@ -1,0 +1,9 @@
+mtllib triangle.mtl
+o wireframe
+usemtl triangle_mtl
+v 0.0 0.0 0.0
+v 150.0 150.0 0.0
+v 300.0 0.0 0.0
+f 1 2
+f 2 3
+f 3 1

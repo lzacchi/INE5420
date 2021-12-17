@@ -350,9 +350,12 @@ class MainWindow(QMainWindow):
         if visibility:
             for coordinate in wireframe_coordinates:
                 for point in range(len(coordinate)):
-                    x1, y1 = coordinate[point]
-                    x2, y2 = coordinate[(point + 1) % len(coordinate)]
-
+                    try:
+                        x1, y1 = coordinate[point]
+                        x2, y2 = coordinate[(point + 1) % len(coordinate)]
+                    except TypeError:
+                        x1, y1 = (0, 0)
+                        x2, y2 = (0, 0)
                     # viewport transformation
                     x1_vp = x_viewport(x1, self.window_coordinates.min_x, self.window_coordinates.max_x,
                                        self.viewport_coordinates.min_x, self.viewport_coordinates.max_x)
