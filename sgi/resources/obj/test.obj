@@ -1,6 +1,3 @@
-mtllib test.mtl
-o wireframe
-usemtl wireframe_mtl
-v 20.000000000000004 20.0 0.0
-v 30.000000000000004 254.00000000000003 0.0
-f -2 -1
+version https://git-lfs.github.com/spec/v1
+oid sha256:bcb45017ec83b9a8201826be5aa52287bb0ab315f6c1d306bf16d39ebed09969
+size 131

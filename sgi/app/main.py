@@ -1,17 +1,3 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow
-
-from gui.main_window import MainWindow
-
-
-def app() -> None:
-    app = QApplication(sys.argv)
-    ex = MainWindow()
-    w = QMainWindow()
-    ex.setupUi(w)
-    w.show()
-    sys.exit(app.exec_())
-
-
-if __name__ == "__main__":
-    app()
+version https://git-lfs.github.com/spec/v1
+oid sha256:f04ae1f6f5c9e3cee57fd100044a644583ada26064a38282d8f4550504861714
+size 299
